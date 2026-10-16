@@ -37,14 +37,14 @@ B/C 在核心 PR 合併後 `git switch main`、`git pull --ff-only`，再分別 
 詳見 Integration Contract。GO/STOP 使用 server time；刷新從 DB 還原。STOP 失敗不清除現有 active session，可再次 STOP；若其實已提交，重送仍不會重複累積。離線未送達 STOP 時持續計時，直到線上 STOP 成功；單次最多計入 12 小時。每 15 秒與視窗 focus 同步跨裝置狀態。
 
 ## 已知限制與驗收
-尚未提供 Supabase project，因此 migration、真實 Auth、RLS/跨帳號隔離、RPC 並行與 Vercel 部署需實際驗收。無 GPS、通知或離線佇列。只有一株花，不循環收集。Demo 不持久化，刷新回 Seed。Garden/Profile 刻意保留佔位。請先由 A 確認本機測試與架構，再進行 GitHub PR/整合。
+Supabase project 已建立，migration 在 SQL Editor 執行成功，公開註冊已關閉；尚未建立五個 Demo 帳號與 allowlist。因此真實 Auth、RLS/跨帳號隔離、RPC 並行與 Vercel 部署仍需實際驗收。無 GPS、通知或離線佇列。只有一株花，不循環收集。Demo 不持久化，刷新回 Seed。Garden/Profile 刻意保留佔位。GitHub 功能分支已推送，尚未合併 main。
 
 實機驗收：五帳號成功登入、非名單帳號無資料權限；A/B 看不到彼此紀錄；GO 後刷新恢復；兩個裝置 GO 只一筆；兩次 STOP 只計一次；斷網 STOP 失敗後復網重試；檢查 projection 與 completed sessions 總和相同。
 
 ## 本次本機驗證結果
 2026-10-16：TypeScript `tsc -b` 與 Vite production build 通過。Vitest Mock/domain tests 通過（包含 route 還原等待/保護、GO/STOP、重複點擊、失敗重試、active session 還原、成長門檻、Demo 隔離與當地日期 streak）。環境沒有 npm executable，因此直接用內建 Node 執行 `node_modules/typescript/bin/tsc -b`、`node_modules/vite/bin/vite.js build`、`node_modules/vitest/vitest.mjs run`，沒有執行 npm 指令本身。
 
-依賴以 pnpm 安裝並附 `pnpm-lock.yaml`；團隊可使用 `pnpm install --frozen-lockfile` / `pnpm dev` / `pnpm test` / `pnpm build` 取得一致版本。npm 也支援 package.json scripts，但目前未產生 package-lock.json。pnpm install 曾因 esbuild lifecycle 未核准而回傳非零，實際安裝的 binary 已經通過 Vite build；`pnpm-workspace.yaml` 明確停用該 lifecycle。沒有執行真實後端測試，也沒有推送、建立 PR 或合併 main，等待 A 確認架構與結果。
+依賴以 pnpm 安裝並附 `pnpm-lock.yaml`；團隊可使用 `pnpm install --frozen-lockfile` / `pnpm dev` / `pnpm test` / `pnpm build` 取得一致版本。npm 也支援 package.json scripts，但目前未產生 package-lock.json。pnpm install 曾因 esbuild lifecycle 未核准而回傳非零，實際安裝的 binary 已經通過 Vite build；`pnpm-workspace.yaml` 明確停用該 lifecycle。尚未執行真實後端測試、建立 PR 或合併 main；功能分支已推送，等待 A 確認架構與結果。
 
 ## 本機畫面預覽
 啟動 `pnpm dev` 後開啟 `/preview`。此頁只在開發模式提供，使用範例資料與本機計時，方便 A/B/C 邊開發邊確認畫面；正式資料仍需由登入後 `/break` 測試。`src/Preview.tsx` 由 A 維護。

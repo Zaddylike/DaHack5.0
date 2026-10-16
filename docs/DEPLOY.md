@@ -20,6 +20,8 @@ Vercel 免費 Hobby 專案會提供 `*.vercel.app` 公開網址，不需要購�
 
 在 Vercel Dashboard 移除或停用該專案後，公開網址即不再服務。若 Demo 帳號不再使用，請在 Supabase Dashboard 停用或刪除帳號與專案；先匯出你需要保留的資料。刪除專案或資料通常不可復原，請由專案擁有者確認後操作。Supabase Free project 可能因活動量低而自動暫停，不能把它當成精確的一週自動到期機制。
 
-## 目前狀態
+## 目前狀態（2026-10-16）
 
-本機程式可 build、Mock 測試通過；尚無 Supabase 專案 URL / publishable key、沒有執行 migration 與實際五帳號驗收，也尚未登入 Vercel 或取得公開 URL。請不要把本機 `127.0.0.1` 網址當成公開網站。
+本機程式可 build、Mock 測試通過。Supabase Free project 已建立，migration 已在 SQL Editor 成功執行，Email provider 已啟用且公開註冊已關閉。GitHub `feature/core-backend` 已推送，`main` 尚未合併。Auth Users 清單目前為空，五個 Demo 帳號與 allowlist 尚需建立；真實登入、RLS 隔離與 GO/STOP 尚未驗收。
+
+Vercel 匯入表單曾預設指向 GitHub `main`，該分支沒有應用程式。自動審核拒絕從錯誤來源按 Deploy。必須先讓 Vercel 明確部署 `feature/core-backend`，並驗證部署輸出；目前沒有公開 URL。請不要把本機 `127.0.0.1` 網址當成公開網站。
