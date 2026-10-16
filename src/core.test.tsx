@@ -18,8 +18,8 @@ const user = { id: 'user-a' } as User;
 const active: BreakSession = { id: 'session-a', user_id: user.id, started_at: new Date().toISOString(), ended_at: null, duration_seconds: 0 };
 const wrapper = ({ children }: { children: React.ReactNode }) => <AuthContext.Provider value={{ user, loading: false, error: '' }}>{children}</AuthContext.Provider>;
 describe('growth', () => {
-  it.each([[0, 0], [2519, 0], [2520, 1], [5040, 2], [8820, 3], [12600, 4], [99999, 4], [-1, 0]])('maps %s seconds to stage %s', (seconds, stage) => expect(getGrowth(seconds).stageIndex).toBe(stage));
-  it('calculates next-stage progress', () => { expect(getGrowth(1260).nextStagePercent).toBe(50); expect(getGrowth(12600).isBloom).toBe(true); });
+  it.each([[0, 0], [119, 0], [120, 1], [299, 1], [300, 2], [419, 2], [420, 3], [599, 3], [600, 4], [99999, 4], [-1, 0]])('maps %s seconds to stage %s', (seconds, stage) => expect(getGrowth(seconds).stageIndex).toBe(stage));
+  it('calculates next-stage progress', () => { expect(getGrowth(60).nextStagePercent).toBe(50); expect(getGrowth(120).secondsToNextStage).toBe(180); expect(getGrowth(600).isBloom).toBe(true); });
 });
 it('unlocks Nature Beginner after 10 completed minutes', () => {
   expect(getAchievements({ totalBreakSeconds: 599, totalSessions: 1, currentStreak: 0 })[1].unlocked).toBe(false);

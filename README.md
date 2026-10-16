@@ -13,7 +13,7 @@ npm test
 npm run build
 ```
 
-五個預建 Demo 帳號、無自行註冊。GO/STOP 由 PostgreSQL 伺服器計時並保存，210 分鐘開花是遊戲設計參數。Garden/Profile 目前為組員開發用佔位頁。
+五個預建 Demo 帳號、無自行註冊。GO/STOP 由 PostgreSQL 伺服器計時並保存。目前展示用成長門檻為累積 0、2、5、7、10 分鐘，不代表植物真實生長時間。Garden 提供五階段示意圖與不改動正式資料的 Demo Mode；Profile 顯示正式統計。
 
 設定、SQL、帳號建立與分工見 [TEAM_HANDOFF](docs/TEAM_HANDOFF.md)。Props / hooks / 網路失敗行為見 [INTEGRATION_CONTRACT](docs/INTEGRATION_CONTRACT.md)。
 

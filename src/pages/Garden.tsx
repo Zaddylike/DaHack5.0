@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { STAGES, type getGrowth } from '../lib/growth';
+import { STAGES, STAGE_SECONDS, type getGrowth } from '../lib/growth';
 import type { useDemoState } from '../context/DemoContext';
 import './Garden.css';
 
@@ -53,11 +53,11 @@ export function Garden({ growth, demo }: GardenProps) {
         <p className="eyebrow m-0">CURRENT STAGE</p>
         <h2 className="mb-1 mt-3 font-serif text-4xl">{stage}</h2>
         <p className="mt-0 text-sm text-[#73816d]">{demo.enabled ? 'Demo preview only. Your real garden stays unchanged.' : growth.isBloom ? 'Your California Poppy is in bloom.' : 'Each completed break helps your poppy grow.'}</p>
-        <div className="my-5 flex justify-between gap-2" aria-label="Five growth stages">{STAGES.map((item, index) => <div key={item} className="min-w-0 flex-1 text-center"><span className={`mx-auto block h-3 w-3 rounded-full ${index <= stageIndex ? 'bg-[#63835b]' : 'bg-[#d9e1d2]'}`}/><span className={`mt-2 block text-[10px] sm:text-xs ${index === stageIndex ? 'font-bold text-[#355b3b]' : 'text-[#889584]'}`}>{item}</span></div>)}</div>
+        <div className="my-5 flex justify-between gap-2" aria-label="Five growth stages">{STAGES.map((item, index) => <div key={item} className="min-w-0 flex-1 text-center"><span className={`mx-auto block h-3 w-3 rounded-full ${index <= stageIndex ? 'bg-[#63835b]' : 'bg-[#d9e1d2]'}`}/><span className={`mt-2 block text-[10px] sm:text-xs ${index === stageIndex ? 'font-bold text-[#355b3b]' : 'text-[#889584]'}`}>{item}</span><span className="mt-1 block text-[10px] text-[#9aa596]">{STAGE_SECONDS[index] / 60}m</span></div>)}</div>
         <div className="border-t border-[#e4eadf] pt-5">
-          <div className="mb-2 flex justify-between text-sm"><span>Official growth</span><strong>{Math.floor(growth.percent)}%</strong></div>
+          <div className="mb-2 flex justify-between text-sm"><span>Official growth</span><strong>{growth.percent < 1 && growth.percent > 0 ? growth.percent.toFixed(2) : Math.floor(growth.percent)}%</strong></div>
           <progress className="garden-progress w-full" aria-label="Official plant growth" max="100" value={growth.percent}/>
-          <p className="mb-0 text-xs text-[#81907c]">Bloom at 210 completed minutes. This is a game goal.</p>
+          <p className="mb-0 text-xs text-[#81907c]">Bloom at 10 completed minutes. You can take several short breaks.</p>
         </div>
       </div>
     </div>
