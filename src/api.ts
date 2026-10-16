@@ -9,6 +9,12 @@ export async function loadSessions(): Promise<BreakSession[]> {
   if (error) throw error;
   return data;
 }
+export async function loadDisplayName(): Promise<string | null> {
+  if (!supabase) throw new Error('Configure Supabase to continue.');
+  const { data, error } = await supabase.from('profiles').select('display_name').maybeSingle();
+  if (error) throw error;
+  return data?.display_name ?? null;
+}
 export async function startBreak(): Promise<void> {
   const { error } = await supabase!.rpc('start_break');
   if (error) throw error;
