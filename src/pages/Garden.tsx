@@ -1,0 +1,4 @@
+import type { getGrowth } from '../lib/growth';
+import type { useDemoState } from '../context/DemoContext';
+export type GardenProps = { growth: ReturnType<typeof getGrowth>; demo: ReturnType<typeof useDemoState> };
+export function Garden({ growth, demo }: GardenProps) { return <section><p className="eyebrow">YOUR LITTLE PATCH OF NATURE</p><h1>Garden</h1><p>California Poppy · Eschscholzia californica</p><p>Current stage: {demo.enabled ? demo.stage : growth.stage}</p><progress max="100" value={growth.percent}/><p>{Math.floor(growth.percent)}% of 210 minutes</p><label><input type="checkbox" checked={demo.enabled} onChange={e => demo.setEnabled(e.target.checked)}/> Preview stages (demo only)</label>{demo.enabled && <div><button onClick={demo.previous}>Previous</button><button onClick={demo.next}>Next</button><button onClick={demo.reset}>Reset</button></div>}<p className="muted">Member B: plant artwork and animations will live here.</p></section>; }
