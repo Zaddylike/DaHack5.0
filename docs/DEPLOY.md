@@ -22,6 +22,6 @@ Vercel 免費 Hobby 專案會提供 `*.vercel.app` 公開網址，不需要購�
 
 ## 目前狀態（2026-10-16）
 
-本機程式可 build、Mock 測試通過。Supabase Free project 已建立，migration 已在 SQL Editor 成功執行，Email provider 已啟用且公開註冊已關閉。五個 Demo Auth 帳號已建立並加入 `demo_accounts` slot 1–5，查詢確認剛好五筆。五張表的 RLS 均已啟用；allowlist 表沒有瀏覽器政策，其餘四張表各有一條 owner policy。GitHub `feature/core-backend` 已推送，`main` 尚未合併。真實登入、跨帳號隔離與 GO/STOP 尚未驗收；密碼只由專案擁有者掌握。
+本機程式可 build、17 個 Mock 測試通過。Supabase Free project 已建立，migration 已在 SQL Editor 成功執行，Email provider 已啟用且公開註冊已關閉。五個 Demo Auth 帳號已建立並加入 `demo_accounts` slot 1–5，查詢確認剛好五筆。五張表的 RLS 均已啟用；allowlist 表沒有瀏覽器政策，其餘四張表各有一條 owner policy。GitHub PR #1 已將 `feature/core-backend` 合併到 `main`，Vercel 已從 `main` 成功部署至 https://bloombreak-dahack.vercel.app/ 。正式 Login 頁面可開啟，未登入直接開啟 `/break` 會轉到 `/login`。真實登入、跨帳號隔離與 GO/STOP 尚未驗收；密碼只由專案擁有者掌握。
 
-Vercel 匯入表單曾預設指向尚未有應用程式的 GitHub `main`，因此尚未部署。目前沒有公開 URL；合併後須先確認遠端 `main` 已包含應用程式，再按 Deploy。請不要把本機 `127.0.0.1` 網址當成公開網站。
+後續修改先在 `feature/core-backend` 測試，再透過 Pull Request 合併到 `main`；Vercel 會從 `main` 進行正式部署。
