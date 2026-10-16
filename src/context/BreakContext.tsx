@@ -16,7 +16,8 @@ export function useBreakData() {
     try { await action(); await refresh(); } catch (e) { setError(e instanceof Error ? e.message : '操作失敗，請重試'); } finally { locked.current = false; setBusy(false); }
   }
   const statistics = getStatistics(sessions);
-  return { sessions, activeSession, statistics, growth: getGrowth(statistics.totalBreakSeconds), achievements: getAchievements(statistics), flowersCollected: statistics.totalBreakSeconds >= 12600 ? 1 : 0, busy, loading, error,
+  const growth = getGrowth(statistics.totalBreakSeconds);
+  return { sessions, activeSession, statistics, growth, achievements: getAchievements(statistics), flowersCollected: growth.isBloom ? 1 : 0, busy, loading, error,
     start: () => perform(startBreak), stop: () => activeSession ? perform(() => stopBreak(activeSession.id)) : Promise.resolve(), retry: () => perform(refresh) };
 }
 type BreakData = ReturnType<typeof useBreakData>;

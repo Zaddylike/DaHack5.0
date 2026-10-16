@@ -12,7 +12,7 @@ export function Preview() {
   const [elapsed, setElapsed] = useState(0);
   const demo = useDemoState();
   useEffect(() => { if (started === null) return; const timer = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000); return () => clearInterval(timer); }, [started]);
-  const sample = [{ id: 'sample', user_id: 'preview', started_at: new Date().toISOString(), ended_at: new Date().toISOString(), duration_seconds: 5400 }];
+  const sample = [{ id: 'sample', user_id: 'preview', started_at: new Date().toISOString(), ended_at: new Date().toISOString(), duration_seconds: 300 }];
   const statistics = getStatistics(sample);
   const growth = getGrowth(statistics.totalBreakSeconds);
   return <><div className="preview-banner">畫面預覽 · 範例資料，不會儲存　 <a href="/login">前往正式登入</a></div><header><span className="brand">✿ BloomBreak</span><nav>{(['Break','Garden','Profile'] as const).map(name => <button key={name} className={page === name ? 'selected' : ''} onClick={() => setPage(name)}>{name}</button>)}</nav></header>
