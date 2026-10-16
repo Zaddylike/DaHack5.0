@@ -21,6 +21,10 @@ describe('growth', () => {
   it.each([[0, 0], [2519, 0], [2520, 1], [5040, 2], [8820, 3], [12600, 4], [99999, 4], [-1, 0]])('maps %s seconds to stage %s', (seconds, stage) => expect(getGrowth(seconds).stageIndex).toBe(stage));
   it('calculates next-stage progress', () => { expect(getGrowth(1260).nextStagePercent).toBe(50); expect(getGrowth(12600).isBloom).toBe(true); });
 });
+it('unlocks Nature Beginner after 10 completed minutes', () => {
+  expect(getAchievements({ totalBreakSeconds: 599, totalSessions: 1, currentStreak: 0 })[1].unlocked).toBe(false);
+  expect(getAchievements({ totalBreakSeconds: 600, totalSessions: 1, currentStreak: 0 })[1].unlocked).toBe(true);
+});
 it('protects unauthenticated routes and waits for restoration', () => {
   const tree = (loading: boolean, currentUser: User | null) => <AuthContext.Provider value={{ user: currentUser, loading, error: '' }}><MemoryRouter initialEntries={['/break']}><Routes><Route path="/login" element={<p>Login page</p>}/><Route element={<ProtectedRoute/>}><Route path="/break" element={<p>Break page</p>}/></Route></Routes></MemoryRouter></AuthContext.Provider>;
   const view = render(tree(true, null)); expect(screen.queryByText('Restoring session…')).not.toBeNull();
