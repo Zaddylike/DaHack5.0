@@ -22,6 +22,6 @@ Vercel 免費 Hobby 專案會提供 `*.vercel.app` 公開網址，不需要購�
 
 ## 目前狀態（2026-10-16）
 
-本機程式可 build、Mock 測試通過。Supabase Free project 已建立，migration 已在 SQL Editor 成功執行，Email provider 已啟用且公開註冊已關閉。GitHub `feature/core-backend` 已推送，`main` 尚未合併。Auth Users 清單目前為空，五個 Demo 帳號與 allowlist 尚需建立；真實登入、RLS 隔離與 GO/STOP 尚未驗收。
+本機程式可 build、Mock 測試通過。Supabase Free project 已建立，migration 已在 SQL Editor 成功執行，Email provider 已啟用且公開註冊已關閉。五個 Demo Auth 帳號已建立並加入 `demo_accounts` slot 1–5，查詢確認剛好五筆。五張表的 RLS 均已啟用；allowlist 表沒有瀏覽器政策，其餘四張表各有一條 owner policy。GitHub `feature/core-backend` 已推送，`main` 尚未合併。真實登入、跨帳號隔離與 GO/STOP 尚未驗收；密碼只由專案擁有者掌握。
 
 Vercel 匯入表單曾預設指向 GitHub `main`，該分支沒有應用程式。自動審核拒絕從錯誤來源按 Deploy。必須先讓 Vercel 明確部署 `feature/core-backend`，並驗證部署輸出；目前沒有公開 URL。請不要把本機 `127.0.0.1` 網址當成公開網站。

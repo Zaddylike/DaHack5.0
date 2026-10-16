@@ -37,7 +37,7 @@ B/C 在核心 PR 合併後 `git switch main`、`git pull --ff-only`，再分別 
 詳見 Integration Contract。GO/STOP 使用 server time；刷新從 DB 還原。STOP 失敗不清除現有 active session，可再次 STOP；若其實已提交，重送仍不會重複累積。離線未送達 STOP 時持續計時，直到線上 STOP 成功；單次最多計入 12 小時。每 15 秒與視窗 focus 同步跨裝置狀態。
 
 ## 已知限制與驗收
-Supabase project 已建立，migration 在 SQL Editor 執行成功，公開註冊已關閉；尚未建立五個 Demo 帳號與 allowlist。因此真實 Auth、RLS/跨帳號隔離、RPC 並行與 Vercel 部署仍需實際驗收。無 GPS、通知或離線佇列。只有一株花，不循環收集。Demo 不持久化，刷新回 Seed。Garden/Profile 刻意保留佔位。GitHub 功能分支已推送，尚未合併 main。
+Supabase project 已建立，migration 在 SQL Editor 執行成功，公開註冊已關閉；五個 Demo 帳號與 allowlist 已建立，查詢確認 slot 1–5。真實 Auth、RLS/跨帳號隔離、RPC 並行與 Vercel 部署仍需實際驗收。無 GPS、通知或離線佇列。只有一株花，不循環收集。Demo 不持久化，刷新回 Seed。Garden/Profile 刻意保留佔位。GitHub 功能分支已推送，尚未合併 main。
 
 實機驗收：五帳號成功登入、非名單帳號無資料權限；A/B 看不到彼此紀錄；GO 後刷新恢復；兩個裝置 GO 只一筆；兩次 STOP 只計一次；斷網 STOP 失敗後復網重試；檢查 projection 與 completed sessions 總和相同。
 
