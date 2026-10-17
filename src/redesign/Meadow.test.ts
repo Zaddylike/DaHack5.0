@@ -12,7 +12,7 @@ describe('natural garden placement', () => {
     for (const p of plants) expect(terrainHeight(p.x,p.z)).toBeGreaterThanOrEqual(.1);
   });
   it('does not move existing flowers when a new flower blooms', () => {
-    expect(flowerPositions(2)).toEqual([{ x: 1.5, z: 1.8 }, { x: 2.25, z: .7 }]);
+    expect(flowerPositions(2)).toEqual([{ x: 2.2, z: 2.1 }, { x: 2.6, z: .5 }]);
     expect(flowerPositions(31).slice(0,30)).toEqual(flowerPositions(30));
     expect(flowerPositions(0)).toEqual([]);
     expect(flowerPositions(1000)).toHaveLength(100);

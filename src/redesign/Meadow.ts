@@ -19,7 +19,7 @@ function random(seed: number) { let state = seed >>> 0; return () => { state = (
 export function flowerPositions(count: number) {
   const rng = random(713), positions: { x: number; z: number }[] = [];
   // The first flowers anchor the foreground, where the house cannot hide them.
-  for (const position of [{ x: 1.5, z: 1.8 }, { x: 2.25, z: .7 }]) {
+  for (const position of [{ x: 2.2, z: 2.1 }, { x: 2.6, z: .5 }]) {
     if (positions.length < Math.min(100, count)) positions.push(position);
   }
   for (let attempt = 0; positions.length < Math.min(100, count) && attempt < 10000; attempt++) {
