@@ -38,7 +38,7 @@ it('GO/STOP refresh official sessions and rejects duplicate concurrent STOP', as
   let finish!: () => void; mocks.stopBreak.mockImplementation(() => new Promise<void>(resolve => { finish = resolve; }));
   const { result } = renderHook(useBreakData, { wrapper }); await waitFor(() => expect(result.current.loading).toBe(false));
   await act(() => result.current.start()); expect(result.current.activeSession?.id).toBe(active.id);
-  let pending!: Promise<void>; act(() => { pending = result.current.stop(); void result.current.stop(); }); expect(mocks.stopBreak).toHaveBeenCalledTimes(1);
+  let pending!: Promise<boolean>; act(() => { pending = result.current.stop(); void result.current.stop(); }); expect(mocks.stopBreak).toHaveBeenCalledTimes(1);
   await act(async () => { finish(); await pending; }); expect(result.current.statistics.totalBreakSeconds).toBe(60); expect(result.current.activeSession).toBeNull();
 });
 it('retains active server session on failed STOP and allows retry', async () => {

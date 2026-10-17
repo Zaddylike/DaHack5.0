@@ -1,4 +1,4 @@
-import type { BreakSession } from '../domain';
+import type { BreakMemory, BreakSession } from '../domain';
 import { useAuth } from '../context/AuthContext';
 import type { getStatistics } from '../lib/statistics';
 import type { getAchievements } from '../lib/achievements';
@@ -7,6 +7,8 @@ export type ProfileProps = {
   statistics: ReturnType<typeof getStatistics>;
   achievements: ReturnType<typeof getAchievements>;
   sessions: BreakSession[];
+  memories?: BreakMemory[];
+  memoryError?: string;
   flowersCollected: number;
   displayName?: string;
   loading?: boolean;
