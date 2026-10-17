@@ -31,7 +31,7 @@ export function flowerPositions(count: number) {
 export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: number; z: number }> = []) {
   const disposables: { dispose: () => void }[] = [], rng = random(257), color = new THREE.Color();
   const segments = 64, rings = 16, positions: number[] = [], colors: number[] = [], indices: number[] = [];
-  const moss = new THREE.Color('#879a78'), light = new THREE.Color('#a8b59a');
+  const moss = new THREE.Color('#819b5a'), light = new THREE.Color('#a6b578');
   for (let r = 0; r <= rings; r++) for (let s = 0; s <= segments; s++) {
     const angle = s / segments * Math.PI * 2, radius = r / rings;
     const wobble = 1 + Math.sin(angle * 5) * .025 + Math.cos(angle * 3) * .035;
@@ -51,9 +51,9 @@ export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: num
   const bladeGeo = new THREE.BufferGeometry();
   bladeGeo.setAttribute('position', new THREE.Float32BufferAttribute([-.045,0,0,.045,0,0,-.035,.34,.018,.035,.34,.018,-.022,.7,.055,.022,.7,.055,0,1,.12], 3));
   bladeGeo.setIndex([0,1,2,1,3,2,2,3,4,3,5,4,4,5,6]); bladeGeo.computeVertexNormals();
-  bladeGeo.setAttribute('color', new THREE.Float32BufferAttribute([.66,.70,.64,.66,.70,.64,.80,.84,.77,.80,.84,.77,.94,.96,.90,.94,.96,.90,1,1,.96],3));
+  bladeGeo.setAttribute('color', new THREE.Float32BufferAttribute([.64,.72,.51,.64,.72,.51,.78,.85,.61,.78,.85,.61,.94,.97,.78,.94,.97,.78,1,1,.88],3));
   const gradient = new THREE.DataTexture(new Uint8Array([100,165,215,255]),4,1,THREE.RedFormat); gradient.minFilter = THREE.NearestFilter; gradient.magFilter = THREE.NearestFilter; gradient.needsUpdate = true;
-  const grassMat = new THREE.MeshToonMaterial({ color: '#a2ada3', vertexColors: true, gradientMap: gradient, side: THREE.DoubleSide });
+  const grassMat = new THREE.MeshToonMaterial({ color: '#a0b676', vertexColors: true, gradientMap: gradient, side: THREE.DoubleSide });
   const wind = { value: 0 };
   grassMat.onBeforeCompile = shader => {
     shader.uniforms.meadowTime = wind; shader.vertexShader = 'uniform float meadowTime;\n' + shader.vertexShader;
@@ -72,10 +72,10 @@ export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: num
     const clearingEdge = Math.min(1, (nearestFlower - .22) / .2);
     const density = .55 + Math.sin(x * 3 + z * 1.4) * .20 + Math.cos(z * 3.1 - x) * .18;
     if (rng() > density * (.5 + .5 * clearingEdge)) continue;
-    candidates.push({ x,z,height:(.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07) * .72 * (.65 + .35 * clearingEdge), rotation:rng()*Math.PI*2 });
+    candidates.push({ x,z,height:(.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07) * .72 * (.4 + .6 * clearingEdge), rotation:rng()*Math.PI*2 });
   }
   const grass = new THREE.InstancedMesh(bladeGeo,grassMat,candidates.length); grass.receiveShadow = true; grass.castShadow = false;
-  const dummy = new THREE.Object3D(), darkGrass = new THREE.Color('#718579'), sunGrass = new THREE.Color('#a4b4a3');
+  const dummy = new THREE.Object3D(), darkGrass = new THREE.Color('#688b48'), sunGrass = new THREE.Color('#a9bb6e');
   candidates.forEach((blade,i) => { dummy.position.set(blade.x,terrainHeight(blade.x,blade.z),blade.z); dummy.rotation.set(0,blade.rotation,0); dummy.scale.set(.6+ rng()*.4,blade.height,.6); dummy.updateMatrix(); grass.setMatrixAt(i,dummy.matrix); color.copy(darkGrass).lerp(sunGrass,rng()); grass.setColorAt(i,color); });
   grass.instanceMatrix.needsUpdate = true; if (grass.instanceColor) grass.instanceColor.needsUpdate = true; scene.add(grass); disposables.push(grass,bladeGeo,grassMat,gradient);
   return { bladeCount: candidates.length, update: (time:number) => { wind.value=time; }, dispose: () => { scene.remove(ground,edge,grass); disposables.forEach(item => item.dispose()); } };
