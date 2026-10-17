@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { User } from '@supabase/supabase-js';
@@ -10,9 +10,10 @@ import { useDemoState } from './context/DemoContext';
 import { getGrowth } from './lib/growth';
 import { getStatistics } from './lib/statistics';
 import { getAchievements } from './lib/achievements';
-import type { BreakSession } from './domain';
-const mocks = vi.hoisted(() => ({ loadSessions: vi.fn(), startBreak: vi.fn(), stopBreak: vi.fn() }));
+import { EMPTY_GARDEN, type BreakSession } from './domain';
+const mocks = vi.hoisted(() => ({ loadSessions: vi.fn(), loadGardenState: vi.fn(), startBreak: vi.fn(), stopBreak: vi.fn(), plantSeed: vi.fn(), claimSeeds: vi.fn() }));
 vi.mock('./api', () => ({ ...mocks, supabase: null }));
+beforeEach(() => { mocks.loadGardenState.mockResolvedValue(EMPTY_GARDEN); mocks.claimSeeds.mockResolvedValue(undefined); });
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 const user = { id: 'user-a' } as User;
 const active: BreakSession = { id: 'session-a', user_id: user.id, started_at: new Date().toISOString(), ended_at: null, duration_seconds: 0 };
@@ -45,6 +46,29 @@ it('retains active server session on failed STOP and allows retry', async () => 
   const { result } = renderHook(useBreakData, { wrapper }); await waitFor(() => expect(result.current.activeSession).not.toBeNull());
   await act(() => result.current.stop()); expect(result.current.error).toBe('offline'); expect(result.current.activeSession?.id).toBe(active.id); expect(result.current.statistics.totalSessions).toBe(0);
   mocks.loadSessions.mockResolvedValue([{ ...active, ended_at: new Date().toISOString(), duration_seconds: 90 }]); await act(() => result.current.stop()); expect(result.current.error).toBe(''); expect(result.current.statistics.totalBreakSeconds).toBe(90);
+});
+it('plants a cloud seed through the shared API and refreshes the garden', async () => {
+  const seeded = { ...EMPTY_GARDEN, seeds: [0, 0, 1, 0, 0] };
+  const planted = { ...seeded, seeds: [0, 0, 0, 0, 0], growing_kind: 2 };
+  mocks.loadSessions.mockResolvedValue([]);
+  mocks.loadGardenState.mockResolvedValueOnce(seeded).mockResolvedValue(planted);
+  mocks.plantSeed.mockResolvedValue(undefined);
+  const { result } = renderHook(useBreakData, { wrapper });
+  await waitFor(() => expect(result.current.garden.seeds[2]).toBe(1));
+  await act(async () => { expect(await result.current.plant(2)).toBe(true); });
+  expect(mocks.plantSeed).toHaveBeenCalledWith(2);
+  expect(result.current.garden.growing_kind).toBe(2);
+});
+it('claims a seed while GO is running, without waiting for STOP', async () => {
+  const running = { ...active, started_at: new Date(Date.now() - 301000).toISOString() };
+  mocks.loadSessions.mockResolvedValue([running]);
+  mocks.loadGardenState.mockResolvedValueOnce(EMPTY_GARDEN).mockResolvedValue({ ...EMPTY_GARDEN, seeds: [1, 0, 0, 0, 0], awarded_milestones: 1 });
+  const { result, unmount } = renderHook(useBreakData, { wrapper });
+  await waitFor(() => expect(result.current.activeSession).not.toBeNull());
+  await waitFor(() => expect(mocks.claimSeeds).toHaveBeenCalledTimes(1), { timeout: 2000 });
+  await waitFor(() => expect(result.current.garden.awarded_milestones).toBe(1));
+  expect(mocks.stopBreak).not.toHaveBeenCalled();
+  unmount();
 });
 it('does not create active state when GO fails', async () => {
   mocks.loadSessions.mockResolvedValue([]); mocks.startBreak.mockRejectedValueOnce(new Error('offline'));

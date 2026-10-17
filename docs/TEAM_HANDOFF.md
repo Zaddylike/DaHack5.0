@@ -6,14 +6,14 @@ React + Vite + TypeScript + Tailwind CSS v4 + React Router + Supabase JS。
 `npm test` 執行 Mock / domain 測試；`npm run build` 檢查 TypeScript 與 production bundle。
 Node 建議 22.12+。Vercel 選 Vite，設定兩個同名環境變數；`vercel.json` 支援 SPA 深連結。
 
-- `src/main.tsx`: router、ProtectedRoute、共用導覽與 Login。
+- `src/main.tsx`：router 與 AuthProvider；登入後由 `src/redesign/App.tsx` 呈現 Timer、Garden、Profile。
 - `src/context/AuthContext.tsx`: 共用登入狀態恢復與 authService。
-- `src/context/BreakContext.tsx`: 正式休息資料、讀取、GO/STOP、衍生統計。
+- `src/context/BreakContext.tsx`：正式休息／花園資料、GO/STOP、種子領取與種植、衍生統計。
 - `src/context/DemoContext.tsx`: 僅記憶體的 Demo state。
 - `src/lib/{growth,statistics,achievements}.ts`: 共用純函式。
-- `src/pages/Break.tsx`: 核心計時；Garden/Profile 為佔位。
+- `src/redesign/App.tsx`：目前正式畫面與免登入預覽版；`src/pages/*` 為保留的舊版元件。
 - `src/api.ts`: 唯一共用資料存取層。
-- `supabase/migrations/202610160001_core.sql`: schema、RLS、受控 RPC。
+- `supabase/migrations/202610160001_core.sql`、`202610160002_ten_minute_growth.sql`、`202610170001_cloud_seed_garden.sql`：依序執行的 schema、RLS 與受控 RPC。
 
 ## Supabase 設定
 1. 建立 Supabase project，從 Dashboard 複製 Project URL 與 publishable key 至 `.env.local` 的 `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`。前端不得使用 secret/service-role key。
@@ -23,7 +23,7 @@ Node 建議 22.12+。Vercel 選 Vite，設定兩個同名環境變數；`vercel.
 5. 將五個 auth.users UUID 分別以 slot 1–5 加入 `public.demo_accounts`（Dashboard Table Editor 或 SQL Editor）。slot 範圍與唯一約束最多允許五個帳號存取正式資料。此表沒有瀏覽器存取權限。若須換人，由管理員修改該 slot 的 user_id。
 6. Dashboard 建立的五個帳號才可登入；allowlist 同時保護資料，即使誤開 signup 也不能讀寫正式資料。部署前確認 signup 確實關閉。
 
-所有資料表的 user_id 都關聯 auth.users.id。profiles 可依 RLS 更新自己的名稱；break_sessions / flower_progress / flower_collections 僅開放自己的 SELECT，修改只能經驗證 auth.uid() 與 allowlist 的 RPC。前端無法指定 RPC 使用者。正式真實來源是 completed break_sessions，投影表由 STOP transaction 同步；B/C 不需讀取投影表。
+所有資料表的 user_id 都關聯 auth.users.id。profiles 可依 RLS 更新自己的名稱；break_sessions / flower_progress / flower_collections / garden_state 僅開放自己的 SELECT，修改只能經驗證 auth.uid() 與 allowlist 的 RPC。前端無法指定 RPC 使用者。正式真實來源是 completed break_sessions，投影表由 STOP transaction 同步；B/C 不需讀取投影表。
 
 ## 分工與介面
 B: `src/pages/Garden.tsx`，原創 2D 植物、五階段、點擊抖動、階段轉場。C: `src/pages/Profile.tsx`，統計、收藏、成就、Recent Activity。共用 TypeScript 型別、Props、hooks、回呼與精確欄位見 [INTEGRATION_CONTRACT.md](./INTEGRATION_CONTRACT.md)。B/C 不變更 migration、api、context 或成長公式。
@@ -37,7 +37,7 @@ B/C 在核心 PR 合併後 `git switch main`、`git pull --ff-only`，再分別 
 詳見 Integration Contract。GO/STOP 使用 server time；刷新從 DB 還原。STOP 失敗不清除現有 active session，可再次 STOP；若其實已提交，重送仍不會重複累積。離線未送達 STOP 時持續計時，直到線上 STOP 成功；單次最多計入 12 小時。每 15 秒與視窗 focus 同步跨裝置狀態。
 
 ## 已知限制與驗收
-Supabase project 已建立，migration 在 SQL Editor 執行成功，公開註冊已關閉；五個 Demo 帳號與 allowlist 已建立，查詢確認 slot 1–5。真實 Auth、RLS/跨帳號隔離、RPC 並行與 Vercel 部署仍需實際驗收。無 GPS、通知或離線佇列。只有一株花，不循環收集。Demo 不持久化，刷新回 Seed。Garden/Profile 刻意保留佔位。GitHub 功能分支已推送，尚未合併 main。
+既有核心 migration 已在 Supabase 執行；新的雲端種子 migration 尚需執行。無 GPS、通知或離線佇列。計時器只能證明使用者啟動了計時，無法驗證真的在戶外。種子種類由伺服器隨機選擇；一人同時只能種一株。真實 Supabase 種子 RPC、RLS、跨裝置並行仍需上線驗收。
 
 實機驗收：五帳號成功登入、非名單帳號無資料權限；A/B 看不到彼此紀錄；GO 後刷新恢復；兩個裝置 GO 只一筆；兩次 STOP 只計一次；斷網 STOP 失敗後復網重試；檢查 projection 與 completed sessions 總和相同。
 
@@ -48,3 +48,11 @@ Supabase project 已建立，migration 在 SQL Editor 執行成功，公開註�
 
 ## 本機畫面預覽
 啟動 `pnpm dev` 後開啟 `/preview`。此頁只在開發模式提供，使用範例資料與本機計時，方便 A/B/C 邊開發邊確認畫面；正式資料仍需由登入後 `/break` 測試。`src/Preview.tsx` 由 A 維護。
+
+## 正式種子系統（2026-10-17）
+
+先在 Supabase SQL Editor 執行 `supabase/migrations/202610170001_cloud_seed_garden.sql`，確認成功，再部署本分支。Migration 新增每個使用者獨立的 `garden_state`，保留既有休息與首朵 California Poppy；歷史累積時間每滿 300 秒補發一顆隨機種子。前端只讀取自己的 garden_state，領種子用 `claim_seeds()`、種植用 `plant_seed(seed_kind)`，兩者由伺服器驗證 auth.uid()、allowlist 與資料狀態。
+
+每 300 秒累積外出時間發一顆（3 分鐘 + 2 分鐘也可），GO 計時中會呼叫 claim_seeds，STOP transaction 也會補領漏掉的門檻。`awarded_milestones` 在同一筆 server transaction 更新，跨裝置和重試不會重複發。每次只能種一株；種下後累積 600 秒已完成休息即開花，返還同類種子。正在計時的時間可領種子，但植物成長與 Profile 休息統計要等 STOP 成功後才增加。若 SQL 尚未套用，登入版會顯示載入錯誤；不要先部署前端。
+
+本機驗證：50 個 Vitest 測試與 production build 通過。尚未執行真實 Supabase RPC / RLS 驗收；上線後用五個 Demo 帳號驗證資料隔離、3+2 分鐘領種子、種植、重新整理及重複 STOP。

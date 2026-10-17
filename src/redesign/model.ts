@@ -88,9 +88,10 @@ export function plantSeed(save: Save, kind: number): Save {
   const seeds = [...garden.seeds]; seeds[kind]--;
   return {...save, garden: {...garden, seeds, growing: {kind, seconds:0}}};
 }
-// Stable pseudo-random selection per session/hour avoids rerolling on refresh or React retries.
-function hourlyKind(start: number, hour: number) {
-  let n = ((start % 4294967296) ^ Math.imul(hour, 0x9e3779b9)) >>> 0;
+export const SEED_AWARD_SECONDS = 300;
+// Stable pseudo-random selection per session/award avoids rerolling on refresh or React retries.
+function rewardKind(start: number, award: number) {
+  let n = ((start % 4294967296) ^ Math.imul(award, 0x9e3779b9)) >>> 0;
   n = Math.imul(n ^ n >>> 16, 0x21f0aaad); n = Math.imul(n ^ n >>> 15, 0x735a2d97);
   return ((n ^ n >>> 15) >>> 0) % 5;
 }
@@ -101,7 +102,7 @@ export function tickLocal(save: Save, now = Date.now()): Save {
   if (elapsed <= garden.credited) return save.garden ? save : {...save, garden};
   const delta = elapsed-garden.credited, seeds = [...garden.seeds];
   let flowers = garden.flowers;
-  for (let hour = Math.floor(garden.credited/3600)+1; hour <= Math.floor(elapsed/3600); hour++) seeds[hourlyKind(save.started,hour)]++;
+  for (let award = Math.floor(save.total/SEED_AWARD_SECONDS)+1; award <= Math.floor((save.total+delta)/SEED_AWARD_SECONDS); award++) seeds[rewardKind(save.started,award)]++;
   let growing = garden.growing;
   if (growing) {
     const seconds = growing.seconds + delta;
