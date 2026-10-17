@@ -37,7 +37,7 @@ B/C 在核心 PR 合併後 `git switch main`、`git pull --ff-only`，再分別 
 詳見 Integration Contract。GO/STOP 使用 server time；刷新從 DB 還原。STOP 失敗不清除現有 active session，可再次 STOP；若其實已提交，重送仍不會重複累積。離線未送達 STOP 時持續計時，直到線上 STOP 成功；單次最多計入 12 小時。每 15 秒與視窗 focus 同步跨裝置狀態。
 
 ## 已知限制與驗收
-既有核心 migration 已在 Supabase 執行；新的雲端種子 migration 尚需執行。無 GPS、通知或離線佇列。計時器只能證明使用者啟動了計時，無法驗證真的在戶外。種子種類由伺服器隨機選擇；一人同時只能種一株。真實 Supabase 種子 RPC、RLS、跨裝置並行仍需上線驗收。
+既有核心 migration 已在 Supabase 執行；新的雲端種子 migration 已於 2026-10-17 在正式 Supabase SQL Editor 成功執行；驗證 5 個 Demo 帳號皆有 garden_state、RLS 已啟用且 claim_seeds / plant_seed 已建立。無 GPS、通知或離線佇列。計時器只能證明使用者啟動了計時，無法驗證真的在戶外。種子種類由伺服器隨機選擇；一人同時只能種一株。真實 Supabase 種子 RPC、RLS、跨裝置並行仍需上線驗收。
 
 實機驗收：五帳號成功登入、非名單帳號無資料權限；A/B 看不到彼此紀錄；GO 後刷新恢復；兩個裝置 GO 只一筆；兩次 STOP 只計一次；斷網 STOP 失敗後復網重試；檢查 projection 與 completed sessions 總和相同。
 
