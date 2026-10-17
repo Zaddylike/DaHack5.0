@@ -22,3 +22,7 @@ it('keeps petals and flower centers absent until bloom, with a closed bud before
     parts.forEach(p=>p.dispose());
   }
 });
+
+it('uses fewer vertices in the meadow while keeping all five species finite', () => {
+ for(let kind=0;kind<5;kind++) { const near=flowerGeometry(kind,1,true),far=flowerGeometry(kind,1,false); const vertices=(parts:ReturnType<typeof flowerGeometry>)=>parts.reduce((n,p)=>n+p.getAttribute('position').count,0); expect(vertices(far)).toBeLessThan(vertices(near)); [...near,...far].forEach(g=>g.dispose()); }
+});

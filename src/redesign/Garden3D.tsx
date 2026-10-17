@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { flowerGeometry } from './FlowerGeometry';
 import { flowerStage } from './model';
-import { createMeadow, flowerPositions, terrainHeight } from './Meadow';
+import { activeFlowerPosition, createMeadow, flowerPositions, terrainHeight } from './Meadow';
 
 type Props = { count: number; progress: number; selected: number | null; lastFlower: number; onSelect: (id: number | null) => void; label: string; fallback: string; kindOverride?: number; flowerKinds?: number[]; activeKind?: number };
 const petals = [0xe0b45c, 0xf1eedc, 0x7e9dc5, 0xcb8068, 0xcba2b5];
@@ -12,6 +12,8 @@ const petals = [0xe0b45c, 0xf1eedc, 0x7e9dc5, 0xcb8068, 0xcba2b5];
 export default function Garden3D({ count, progress, selected, lastFlower, onSelect, label, fallback, kindOverride, flowerKinds, activeKind }: Props) {
   const host = useRef<HTMLDivElement>(null), callbacks = useRef({ onSelect }); callbacks.current = { onSelect };
   const [failed, setFailed] = useState(false);
+  const flowerKey = flowerKinds?.join(',') ?? '';
+  const view = useRef<{selected:number|null; position:THREE.Vector3; target:THREE.Vector3; zoom:number} | null>(null);
   useEffect(() => {
     const node = host.current!; let renderer: THREE.WebGLRenderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' }); } catch { setFailed(true); return; }
@@ -32,10 +34,11 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     controls.minPolarAngle = .35; controls.maxPolarAngle = Math.PI / 2.3;
     controls.minZoom = detail ? .65 : .8; controls.maxZoom = detail ? 2 : 1.8;
     controls.rotateSpeed = .55; controls.zoomSpeed = .65;
+    if(view.current?.selected === selected) { camera.position.copy(view.current.position); controls.target.copy(view.current.target); camera.zoom=view.current.zoom; }
     controls.update();
     const ambient = new THREE.HemisphereLight(0xe5f2ff, 0x809663, 1.8); scene.add(ambient);
     const sun = new THREE.DirectionalLight(0xfff1ce, 3.1); sun.position.set(-4, 9, 5); sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -6; sun.shadow.camera.right = 6; sun.shadow.camera.top = 6; sun.shadow.camera.bottom = -6;
+    sun.shadow.mapSize.set(1024, 1024); sun.shadow.camera.left = -6; sun.shadow.camera.right = 6; sun.shadow.camera.top = 6; sun.shadow.camera.bottom = -6;
     sun.shadow.camera.near = .5; sun.shadow.camera.far = 25; sun.shadow.normalBias = .018; sun.shadow.bias = -.00015; sun.shadow.radius = 3;
     scene.add(sun);
     const materials: THREE.Material[] = [], geometries: THREE.BufferGeometry[] = [];
@@ -60,8 +63,9 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ color: 0x465347, opacity: .13 }));
     shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.position.y = -.16; shadowPlane.receiveShadow = true; scene.add(shadowPlane);
     geometries.push(shadowPlane.geometry); materials.push(shadowPlane.material);
-    const gardenPositions = !detail ? flowerPositions(count + (lastFlower === count ? 1 : 0)) : [];
-    const meadow = !detail ? createMeadow(scene, gardenPositions) : null;
+    const gardenPositions = !detail ? flowerPositions(count) : [];
+    const activePosition = activeFlowerPosition(count);
+    const meadow = !detail ? createMeadow(scene, lastFlower === count ? [...gardenPositions,activePosition] : gardenPositions) : null;
     if (!detail) {
       // Limestone dwelling, dark standing-seam roof, recessed glazing and timber door.
       box(2.15, .14, 1.95, stone, -.4, .23, -.45, .035);
@@ -80,11 +84,16 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
       box(.53, .49, .07, stone, -.91, 1.13, .36); box(.44, .40, .075, glass, -.91, 1.13, .39);
       box(.018, .40, .02, timber, -.91, 1.13, .435, .002);
       box(.075, .43, .70, glass, .565, 1.12, -.66); box(.095, .035, .77, stone, .57, .89, -.66);
+      box(.54,.035,.10,stone,-.91,.88,.41,.008);
+      box(.44,.018,.02,timber,-.91,1.13,.438,.002);
+      box(.075,.40,.025,timber,.61,1.12,-.66,.002);
+      box(.10,.08,1.97,roofEdge,-.4,2.49,-.5,.012);
       box(.50, .10, .23, stone, -.05, .24, .55);
       for (let i = 0; i < 5; i++) { const x = -.05 + Math.sin(i * .8) * .16, z = .98 + i * .36; const p = box(.48, .055, .31, stone, x, terrainHeight(x,z) + .025, z, .025); p.rotation.y = Math.sin(i) * .12; }
       // Two restrained sculptural trees, with actual branch and foliage shadows.
       for (const [x, z, scale] of [[-2.3, -1.3, 1], [2.15, -1.65, .72]]) {
         mesh(new THREE.CylinderGeometry(.027, .045, 1.45 * scale, 8), timber, x, .85 * scale, z);
+        for(const side of [-1,1]) { const branch=mesh(new THREE.CylinderGeometry(.012,.025,.52*scale,6),timber,x+side*.14*scale,1.22*scale,z); branch.rotation.z=-side*.6; }
         const foliage = mesh(new THREE.IcosahedronGeometry(.65, 2), green, x, 1.8 * scale, z); foliage.scale.set(.9 * scale, .75 * scale, .85 * scale);
         const second = mesh(new THREE.IcosahedronGeometry(.48, 2), botanicalMaterial(0xa3b779), x + .30 * scale, 1.5 * scale, z + .05); second.scale.set(.8 * scale, .9 * scale, .75 * scale);
         const third = mesh(new THREE.IcosahedronGeometry(.42, 2), botanicalMaterial(0x789650), x - .30 * scale, 1.5 * scale, z + .1); third.scale.set(scale, .8 * scale, .85 * scale);
@@ -99,7 +108,7 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     else {
       gardenPositions.slice(0, count).forEach(({ x,z }, i) => plants.push({ id: i, kind: flowerKinds?.[i] ?? i % 5, x, z, scale: .37 + (i % 5) * .035, progress: 1 }));
       if (lastFlower === count) {
-        const { x, z } = gardenPositions[count];
+        const { x, z } = activePosition;
         plants.push({ id: count, kind: activeKind ?? count % 5, x, z, scale: .48, progress });
       }
     }
@@ -107,10 +116,14 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     for (const plant of plants) { const key = `${plant.kind}-${plant.progress}`; batches.set(key, [...(batches.get(key) ?? []), plant]); }
     const matrix = new THREE.Object3D();
     for (const items of batches.values()) {
-      const { kind, progress: growth } = items[0]; const parts = flowerGeometry(kind, growth); geometries.push(...parts);
+      const { kind, progress: growth } = items[0]; const parts = flowerGeometry(kind, growth, detail); geometries.push(...parts);
       const mats = [botanicalMaterial(0x637d41,true), botanicalMaterial(0x829b58,true), botanicalMaterial(flowerStage(growth) === 0 ? 0x796047 : flowerStage(growth) < 4 ? 0x789351 : petals[kind],true), botanicalMaterial(flowerStage(growth) === 0 ? 0xb19a72 : kind === 3 ? 0x59523c : 0xb59b56,true)];
       parts.forEach((geometry, part) => {
         if (!geometry.getAttribute('position').count) return;
+        const positions = geometry.getAttribute('position'), shades: number[] = [];
+        for(let v=0;v<positions.count;v++) { const y=positions.getY(v), z=positions.getZ(v), x=positions.getX(v); const shade = part === 2 ? .86+.14*Math.min(1,Math.hypot(x,z)/.25) : .80+.18*Math.min(1,y); shades.push(shade,shade,part===1 ? shade*.94 : shade); }
+        geometry.setAttribute('color',new THREE.Float32BufferAttribute(shades,3));
+        (mats[part] as THREE.MeshToonMaterial).vertexColors=true;
         const inst = new THREE.InstancedMesh(geometry, mats[part], items.length); inst.castShadow = true; inst.receiveShadow = true;
         inst.userData.flowerIds = items.map(p => p.id);
         items.forEach((plant, index) => { matrix.position.set(plant.x, detail ? .01 : terrainHeight(plant.x,plant.z), plant.z); matrix.rotation.set(0, plant.id * .8, 0); matrix.scale.setScalar(plant.scale); matrix.updateMatrix(); inst.setMatrixAt(index, matrix.matrix); });
@@ -136,13 +149,13 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     function changed() { render(); if (selectedByZoom) return; if (!detail && lastFlower >= 0 && camera.zoom > 1.7) { selectedByZoom = true; callbacks.current.onSelect(lastFlower); } else if (detail && camera.zoom < .75) { selectedByZoom = true; callbacks.current.onSelect(null); } }
     controls.addEventListener('change', changed);
     let pointerStart = { x: 0, y: 0 }; let pointerCount = 0; let moved = false;
-    const down = (e: PointerEvent) => { pointerCount++; moved = pointerCount > 1; pointerStart = { x: e.clientX, y: e.clientY }; };
+    const down = (e: PointerEvent) => { renderer.domElement.setPointerCapture(e.pointerId); pointerCount++; moved = pointerCount > 1; pointerStart = { x: e.clientX, y: e.clientY }; };
     const move = (e: PointerEvent) => { if (Math.hypot(e.clientX - pointerStart.x, e.clientY - pointerStart.y) > 7) moved = true; };
-    const up = (e: PointerEvent) => { pointerCount = Math.max(0, pointerCount - 1); if (detail || moved) return; const rect = renderer.domElement.getBoundingClientRect(); const ray = new THREE.Raycaster(); ray.params.Mesh = {}; ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); const hit = ray.intersectObjects(pickables)[0]; if (hit && hit.instanceId !== undefined) callbacks.current.onSelect(hit.object.userData.flowerIds[hit.instanceId]); };
+    const up = (e: PointerEvent) => { pointerCount = Math.max(0, pointerCount - 1); if(renderer.domElement.hasPointerCapture(e.pointerId)) renderer.domElement.releasePointerCapture(e.pointerId); if (detail || moved) return; const rect = renderer.domElement.getBoundingClientRect(); const ray = new THREE.Raycaster(); ray.params.Mesh = {}; ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera); const hit = ray.intersectObjects(pickables)[0]; if (hit && hit.instanceId !== undefined) callbacks.current.onSelect(hit.object.userData.flowerIds[hit.instanceId]); };
     renderer.domElement.addEventListener('pointerdown', down); renderer.domElement.addEventListener('pointermove', move); renderer.domElement.addEventListener('pointerup', up);
     const cancel = () => { pointerCount = 0; moved = true; }; renderer.domElement.addEventListener('pointercancel', cancel);
     const lost = (e: Event) => { e.preventDefault(); setFailed(true); }; renderer.domElement.addEventListener('webglcontextlost', lost);
-    return () => { disposed = true; cancelAnimationFrame(frame); cancelAnimationFrame(windFrame); visibility.disconnect(); document.removeEventListener('visibilitychange',resume); reducedMotion.removeEventListener('change',resume); meadow?.dispose(); bandMap.dispose(); observer.disconnect(); controls.dispose(); renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointermove', move); renderer.domElement.removeEventListener('pointerup', up); renderer.domElement.removeEventListener('pointercancel', cancel); renderer.domElement.removeEventListener('webglcontextlost', lost); geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); pickables.forEach(m => m.dispose()); renderer.dispose(); renderer.domElement.remove(); };
-  }, [count, progress, selected, lastFlower, kindOverride, flowerKinds, activeKind]);
-  return <div ref={host} className={`garden-3d ${selected !== null ? 'specimen-3d' : ''}`} role="img" aria-label={label}>{failed && <div className="webgl-fallback"><span>{fallback}</span><button onClick={() => callbacks.current.onSelect(selected === null ? lastFlower : null)}>{selected === null ? '↗' : '←'}</button></div>}</div>;
+    return () => { view.current={selected,position:camera.position.clone(),target:controls.target.clone(),zoom:camera.zoom}; disposed = true; cancelAnimationFrame(frame); cancelAnimationFrame(windFrame); visibility.disconnect(); document.removeEventListener('visibilitychange',resume); reducedMotion.removeEventListener('change',resume); meadow?.dispose(); sun.shadow.dispose(); bandMap.dispose(); observer.disconnect(); controls.dispose(); renderer.domElement.removeEventListener('pointerdown', down); renderer.domElement.removeEventListener('pointermove', move); renderer.domElement.removeEventListener('pointerup', up); renderer.domElement.removeEventListener('pointercancel', cancel); renderer.domElement.removeEventListener('webglcontextlost', lost); geometries.forEach(g => g.dispose()); materials.forEach(m => m.dispose()); pickables.forEach(m => m.dispose()); renderer.dispose(); renderer.domElement.remove(); };
+  }, [count, progress, selected, lastFlower, kindOverride, flowerKey, activeKind]);
+  return <div ref={host} className={`garden-3d ${selected !== null ? 'specimen-3d' : ''}`} role="img" aria-label={label}>{failed && <div className="webgl-fallback"><span>{fallback}</span><button onClick={() => callbacks.current.onSelect(selected === null && lastFlower >= 0 ? lastFlower : null)}>{selected === null ? '↗' : '←'}</button></div>}</div>;
 }

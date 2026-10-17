@@ -28,6 +28,10 @@ export function flowerPositions(count: number) {
   }
   return positions;
 }
+// Reserve a stable foreground slot for the active plant after the visible meadow fills.
+export function activeFlowerPosition(count: number) {
+  return flowerPositions(count + 1)[count] ?? {x: .83, z: 1.15};
+}
 export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: number; z: number }> = []) {
   const disposables: { dispose: () => void }[] = [], rng = random(257), color = new THREE.Color();
   const segments = 64, rings = 16, positions: number[] = [], colors: number[] = [], indices: number[] = [];
@@ -44,7 +48,7 @@ export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: num
   const groundMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide });
   const ground = new THREE.Mesh(groundGeo, groundMat); ground.receiveShadow = true; scene.add(ground); disposables.push(groundGeo, groundMat);
   const edgeShape = new THREE.Shape();
-  for (let s = 0; s <= segments; s++) { const a = s / segments * Math.PI * 2, w = 1 + Math.sin(a * 5) * .025 + Math.cos(a * 3) * .035; const x = Math.cos(a) * 4.05 * w, y = Math.sin(a) * 3.25 * w; if (!s) edgeShape.moveTo(x, y); else edgeShape.lineTo(x, y); }
+  for (let s = 0; s <= segments; s++) { const a = s / segments * Math.PI * 2, w = 1 + Math.sin(a * 5) * .025 + Math.cos(a * 3) * .035; const x = Math.cos(a) * 4.05 * w, y = -Math.sin(a) * 3.25 * w; if (!s) edgeShape.moveTo(x, y); else edgeShape.lineTo(x, y); }
   const edgeGeo = new THREE.ExtrudeGeometry(edgeShape, { depth: .13, bevelEnabled: true, bevelSegments: 2, bevelSize: .04, bevelThickness: .02, steps: 1 }); edgeGeo.rotateX(-Math.PI / 2);
   const edgeMat = new THREE.MeshStandardMaterial({ color: '#8a9167', roughness: 1 }); const edge = new THREE.Mesh(edgeGeo, edgeMat); edge.position.y = -.05; edge.receiveShadow = true; edge.castShadow = true; scene.add(edge); disposables.push(edgeGeo, edgeMat);
   // Tapered blades share one mesh and one shader; no grass textures or alpha sorting.

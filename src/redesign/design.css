@@ -49,3 +49,7 @@
 .button-spinner{width:34px;height:34px;border:2px solid #3f594b45;border-top-color:#3f594b;border-radius:50%;animation:button-spin .8s linear infinite}
 @keyframes button-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.button-spinner{animation:none;border-color:#3f594b}}
+
+.preview-account-note{margin-top:28px;padding:18px 0;border-top:1px solid #cbd8c3;color:#72846b;font-size:11px;line-height:1.8}.preview-account-note small{display:block;margin-top:8px}.preview-account-note .text-button{font-size:11px}
+
+.test-moment{margin:28px 0;padding:18px;background:#f2f6ed;border:1px solid #d1dec8;border-radius:12px;text-align:center}.test-moment figcaption>span{font-size:10px;color:#819176}.test-moment h2{font-size:22px;margin:12px 0 18px}.test-moment img{width:100%;max-height:420px;object-fit:contain;display:block;border-radius:7px;background:#e4ecde}.test-moment .mail-thanks{margin-top:18px}

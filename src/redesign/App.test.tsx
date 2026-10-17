@@ -12,6 +12,14 @@ function mount(path = '/preview') { return render(<MemoryRouter initialEntries={
 beforeEach(() => { localStorage.clear(); localStorage.setItem('bloombreak-language', 'zh'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe('local experience', () => {
+  it('shows Mori as the user-facing product name', () => {
+    localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
+    const preview = mount();
+    expect(screen.getByRole('button', { name: 'Mori' })).toBeTruthy();
+    preview.unmount();
+    mount('/login');
+    expect(screen.getByRole('link', { name: 'Mori' })).toBeTruthy();
+  });
   it('defaults to English when no language preference exists', () => {
     localStorage.removeItem('bloombreak-language');
     localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
@@ -85,4 +93,20 @@ describe('account entry', () => {
     expect(screen.getByRole('button',{name:'开始户外计时'})).toBeTruthy();
     expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({name:'小林',total:1234,storySeen:true});
   });
+});
+
+it('shows the new account panels in local preview and persists actual completed activity', () => {
+  localStorage.setItem(key,JSON.stringify({...freshSave,storySeen:true}));
+  const date=vi.spyOn(Date,'now').mockReturnValue(2000000);
+  const first=mount();
+  fireEvent.click(screen.getByRole('button',{name:'开始户外计时'}));
+  date.mockReturnValue(2065000);
+  fireEvent.click(screen.getByRole('button',{name:'结束户外计时'}));
+  fireEvent.click(screen.getByRole('button',{name:'个人'}));
+  for(const name of ['Achievements','Flower Collection','Recent Activity']) expect(screen.getByRole('heading',{name})).toBeTruthy();
+  expect(screen.getByText('Nature break')).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem(key)!).sessions[0].duration_seconds).toBe(65);
+  first.unmount();mount('/preview/profile');
+  expect(screen.getByText('Nature break')).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem(key)!).sessions).toHaveLength(1);
 });
