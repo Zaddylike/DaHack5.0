@@ -97,12 +97,10 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     const plants: Plant[] = [];
     if (detail) plants.push({ id: selected!, kind: kindOverride ?? (selected! < count ? flowerKinds?.[selected!] : activeKind) ?? selected! % 5, x: 0, z: 0, scale: 1.1, progress: selected! < count ? 1 : progress });
     else {
-      gardenPositions.slice(0, count).forEach(({ x,z }, i) => plants.push({ id: i, kind: flowerKinds?.[i] ?? i % 5, x, z, scale: i < 2 ? 1.45 : i < 5 ? 1 : .62, progress: 1 }));
+      gardenPositions.slice(0, count).forEach(({ x,z }, i) => plants.push({ id: i, kind: flowerKinds?.[i] ?? i % 5, x, z, scale: .37 + (i % 5) * .035, progress: 1 }));
       if (lastFlower === count) {
         const { x, z } = gardenPositions[count];
-        const stage = flowerStage(progress);
-        const earlyStageScale = [1.6, 2.2, 1.8, 1, 1][stage];
-        plants.push({ id: count, kind: activeKind ?? count % 5, x, z, scale: (count < 2 ? 1.45 : count < 5 ? 1 : .62) * earlyStageScale, progress });
+        plants.push({ id: count, kind: activeKind ?? count % 5, x, z, scale: .48, progress });
       }
     }
     const batches = new Map<string, Plant[]>();
