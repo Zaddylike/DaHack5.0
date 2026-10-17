@@ -7,9 +7,9 @@ BloomBreak 把忙碌生活中的短暫休息，變成一場重新發現自然的
 ## 目前可體驗的流程
 
 1. 使用預先建立的 Demo 帳號登入，按 **GO** 開始休息。
-2. 離開螢幕、接觸身邊的自然；回來後按 **STOP**。完成的時間會安全地存入 Supabase，重新整理後仍在。
-3. 累積的正式休息時間推動 California Poppy 經過 **Seed → Sprout → Seedling → Bud → Bloom**。Garden 的 Demo Mode 可快速預覽圖像階段，不會更動正式紀錄。
-4. Profile 顯示休息統計、成就、花朵收藏與最近活動。
+2. 外出時間每累積 5 分鐘，就由伺服器發放一顆隨機種子；例如兩次分別 3 與 2 分鐘也能得到一顆，不必等 STOP 才領取。
+3. 在 Garden 的種子清單選擇一顆種下。已種下的花會隨已完成的休息時間經過 **Seed → Sprout → Seedling → Bud → Bloom**，累積 10 分鐘開花。開花會返還一顆同種類種子。
+4. 按 **STOP** 結束休息，正式紀錄與花園資料儲存於 Supabase；Profile 顯示統計、成就、收藏與最近活動。免登入預覽版資料僅存於該瀏覽器。
 
 目前線上展示版的五個累積門檻是 **0、2、5、7、10 分鐘**，方便黑客松期間分段展示；最初的長期遊戲設計目標是 210 分鐘。這些時間都是遊戲參數，並非植物實際生長速度。
 
@@ -30,6 +30,6 @@ npm test
 npm run build
 ```
 
-不要提交密碼、真實 `.env.local` 或 service-role key。設定方式、SQL Migration 與團隊分工見 [TEAM_HANDOFF](docs/TEAM_HANDOFF.md)；共用資料介面見 [INTEGRATION_CONTRACT](docs/INTEGRATION_CONTRACT.md)；部署方式見 [DEPLOY](docs/DEPLOY.md)。
+不要提交密碼、真實 `.env.local` 或 service-role key。正式種子功能須先執行 `supabase/migrations/202610170001_cloud_seed_garden.sql`，再部署新版前端；舊有花朵和休息紀錄會保留。設定方式、SQL Migration 與團隊分工見 [TEAM_HANDOFF](docs/TEAM_HANDOFF.md)；共用資料介面見 [INTEGRATION_CONTRACT](docs/INTEGRATION_CONTRACT.md)；部署方式見 [DEPLOY](docs/DEPLOY.md)。
 
 開發時可用 `http://localhost:5173/preview` 查看不需 Supabase 憑證的範例畫面。這個路由只在 Vite 開發模式存在，GO／STOP 的範例互動不會寫入正式資料。

@@ -52,19 +52,20 @@ it('advances the starter poppy across separate completed 0/2/5/7/10 minute break
 
 describe('seed loop', () => {
   const begin = () => ({...freshSave,started:1000,garden:{seeds:[0,0,0,0,0],flowers:[],growing:null,credited:0}});
-  it('drops once per full hour of one outing, survives reload, and never rerolls', () => {
-    expect(seedGarden(tickLocal(begin(),3600000)).seeds.reduce((a,b)=>a+b,0)).toBe(0);
-    const first=tickLocal(begin(),3601000);
+  it('drops once per cumulative five minutes, survives reload, and never rerolls', () => {
+    expect(seedGarden(tickLocal(begin(),300000)).seeds.reduce((a,b)=>a+b,0)).toBe(0);
+    const first=tickLocal(begin(),301000);
     expect(seedGarden(first).seeds.reduce((a,b)=>a+b,0)).toBe(1);
-    expect(tickLocal(JSON.parse(JSON.stringify(first)),3601000)).toEqual(first);
-    const stopped=finishLocal(first,7201000);
+    expect(tickLocal(JSON.parse(JSON.stringify(first)),301000)).toEqual(first);
+    const stopped=finishLocal(first,601000);
     expect(seedGarden(stopped).seeds.reduce((a,b)=>a+b,0)).toBe(2);
-    expect(finishLocal(stopped,9000000)).toEqual(stopped);
+    expect(finishLocal(stopped,900000)).toEqual(stopped);
   });
-  it('does not combine partial hours across outings', () => {
-    const first=finishLocal(begin(),1801000);
-    const second=finishLocal({...first,started:2000000},3800000);
-    expect(seedGarden(second).seeds.reduce((a,b)=>a+b,0)).toBe(0);
+  it('combines partial outings: three minutes plus two minutes earns one seed', () => {
+    const first=finishLocal(begin(),181000);
+    expect(seedGarden(first).seeds.reduce((a,b)=>a+b,0)).toBe(0);
+    const second=finishLocal({...first,started:2000000},2120000);
+    expect(seedGarden(second).seeds.reduce((a,b)=>a+b,0)).toBe(1);
   });
   it('returns one matching seed on maturity and requires planting the next seed', () => {
     const base={...begin(),garden:{seeds:[0,0,0,0,0],flowers:[],growing:{kind:2,seconds:bloomSeconds(2)-10},credited:0}};
