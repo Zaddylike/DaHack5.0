@@ -9,9 +9,16 @@ import { freshSave } from './model';
 vi.mock('./Garden3D', () => ({ default: () => <div aria-label="3D scene"/> }));
 const key = 'bloombreak-local-v1';
 function mount(path = '/preview') { return render(<MemoryRouter initialEntries={[path]}><AuthContext.Provider value={{ user: null, loading: false, error: '' }}><App/></AuthContext.Provider></MemoryRouter>); }
-beforeEach(() => localStorage.clear());
+beforeEach(() => { localStorage.clear(); localStorage.setItem('bloombreak-language', 'zh'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe('local experience', () => {
+  it('defaults to English when no language preference exists', () => {
+    localStorage.removeItem('bloombreak-language');
+    localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
+    mount();
+    expect(screen.getByRole('button', { name: 'Start outdoor time' })).toBeTruthy();
+    expect(document.documentElement.lang).toBe('en');
+  });
   it('switches the whole experience to English and remembers the choice', () => {
     localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
     const first = mount();
@@ -34,6 +41,22 @@ describe('local experience', () => {
     first.unmount(); mount();
     expect(screen.queryByRole('button', { name: '继续' })).toBeNull();
     expect(screen.getByRole('button', { name: '开始户外计时' })).toBeTruthy();
+  });
+  it('can schedule the intro for one next visit from Profile', () => {
+    localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
+    const first = mount('/preview/profile');
+    const introSwitch = screen.getByRole('switch', { name: /下次进入时播放开场/ });
+    expect(introSwitch.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(introSwitch);
+    expect(introSwitch.getAttribute('aria-checked')).toBe('true');
+    first.unmount();
+    const second = mount('/preview/profile');
+    expect(screen.getByText('城市的声音，好像从来没有停过。')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /跳过/ }));
+    expect(screen.getByRole('switch', { name: /下次进入时播放开场/ }).getAttribute('aria-checked')).toBe('false');
+    second.unmount();
+    mount('/preview/profile');
+    expect(screen.queryByText('城市的声音，好像从来没有停过。')).toBeNull();
   });
   it('preserves a running break across pages and reload, then saves elapsed time once', () => {
     localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));

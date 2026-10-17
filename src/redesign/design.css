@@ -45,3 +45,4 @@
 .account-panel ol li>span:last-child{font-size:11px;color:#617d5b;white-space:nowrap}
 @media(min-width:700px){.account-stats{grid-template-columns:repeat(4,minmax(0,1fr))}.account-card{min-height:125px}}
 @media(max-width:600px){.account-summary{margin-top:30px}.account-card{padding:15px;min-height:98px}.account-card strong{font-size:23px}.account-panel{padding:18px}}
+.intro-toggle .toggle-track{width:35px;height:20px;flex:none;border-radius:999px;background:#c2cbb8;padding:2px;transition:background .2s ease}.intro-toggle .toggle-track.on{background:#668366}.intro-toggle .toggle-track i{display:block;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0002;transition:transform .2s ease}.intro-toggle .toggle-track.on i{transform:translateX(15px)}.intro-toggle:focus-visible{outline:2px solid #668366;outline-offset:3px}

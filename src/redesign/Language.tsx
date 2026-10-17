@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 type Language = 'zh' | 'en';
-const LanguageContext = createContext({ language: 'zh' as Language, toggle: () => {}, t: (zh: string, _en: string) => zh });
+const LanguageContext = createContext({ language: 'en' as Language, toggle: () => {}, t: (_zh: string, en: string) => en });
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>(() => { try { return localStorage.getItem('bloombreak-language') === 'en' ? 'en' : 'zh'; } catch { return 'zh'; } });
+  const [language, setLanguage] = useState<Language>(() => { try { return localStorage.getItem('bloombreak-language') === 'zh' ? 'zh' : 'en'; } catch { return 'en'; } });
   useEffect(() => { document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en'; try { localStorage.setItem('bloombreak-language', language); } catch {} }, [language]);
   return <LanguageContext.Provider value={{ language, toggle: () => setLanguage(l => l === 'zh' ? 'en' : 'zh'), t: (zh, en) => language === 'zh' ? zh : en }}>{children}</LanguageContext.Provider>;
 }
