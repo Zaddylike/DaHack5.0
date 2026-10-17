@@ -1,3 +1,4 @@
+import { activeFlowerPosition } from './Meadow';
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { createMeadow, flowerPositions, plantable, terrainHeight } from './Meadow';
@@ -30,4 +31,8 @@ describe('natural garden placement', () => {
     expect(planted.bladeCount).toBeLessThan(fullCount);
     planted.dispose();
   });
+});
+
+it('keeps a valid growing-plant slot when the visible meadow reaches its limit', () => {
+ for(const count of [0,1,99,100,101,10000]) { const p=activeFlowerPosition(count); expect(Number.isFinite(p.x)&&Number.isFinite(p.z)).toBe(true); expect(plantable(p.x,p.z)).toBe(true); }
 });

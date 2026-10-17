@@ -86,3 +86,19 @@ describe('account entry', () => {
     expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({name:'小林',total:1234,storySeen:true});
   });
 });
+
+it('shows the new account panels in local preview and persists actual completed activity', () => {
+  localStorage.setItem(key,JSON.stringify({...freshSave,storySeen:true}));
+  const date=vi.spyOn(Date,'now').mockReturnValue(2000000);
+  const first=mount();
+  fireEvent.click(screen.getByRole('button',{name:'开始户外计时'}));
+  date.mockReturnValue(2065000);
+  fireEvent.click(screen.getByRole('button',{name:'结束户外计时'}));
+  fireEvent.click(screen.getByRole('button',{name:'个人'}));
+  for(const name of ['Achievements','Flower Collection','Recent Activity']) expect(screen.getByRole('heading',{name})).toBeTruthy();
+  expect(screen.getByText('Nature break')).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem(key)!).sessions[0].duration_seconds).toBe(65);
+  first.unmount();mount('/preview/profile');
+  expect(screen.getByText('Nature break')).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem(key)!).sessions).toHaveLength(1);
+});

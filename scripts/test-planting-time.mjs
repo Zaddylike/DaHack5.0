@@ -1,0 +1,16 @@
+import {pathToFileURL} from 'node:url';
+const {PGlite}=await import(process.argv[2]?pathToFileURL(process.argv[2]).href:'@electric-sql/pglite');
+import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create schema auth; create function auth.uid() returns uuid language sql as $$select '00000000-0000-0000-0000-000000000001'::uuid$$;create function is_demo_user() returns boolean language sql as $$select true$$;
+create table break_sessions(id uuid primary key,user_id uuid,started_at timestamptz,ended_at timestamptz,duration_seconds integer);
+create table garden_state(user_id uuid primary key,seeds integer[] default array[1,0,0,0,0],flowers smallint[] default '{}',growing_kind smallint,growing_seconds integer default 0);
+create table flower_progress(user_id uuid primary key,total_seconds bigint);
+create table flower_collections(user_id uuid,species text,unique(user_id,species));
+create function claim_seeds() returns void language sql as $$select$$;
+insert into break_sessions values('10000000-0000-0000-0000-000000000001',auth.uid(),clock_timestamp()-interval '11 minutes',null,0);`);
+await db.exec(readFileSync(new URL('../supabase/migrations/202610170004_planting_time.sql',import.meta.url),'utf8'));
+await db.exec(`select plant_seed(0);select finish_break('10000000-0000-0000-0000-000000000001');`);
+let g=(await db.query('select * from garden_state')).rows[0];assert.equal(g.flowers.length,0);assert.ok(g.growing_seconds<3);assert.equal(g.growing_kind,0);
+await db.exec(`update garden_state set planted_at=clock_timestamp()-interval '11 minutes'; insert into break_sessions values('10000000-0000-0000-0000-000000000002',auth.uid(),clock_timestamp()-interval '11 minutes',null,0); select finish_break('10000000-0000-0000-0000-000000000002'); select finish_break('10000000-0000-0000-0000-000000000002');`);
+g=(await db.query('select * from garden_state')).rows[0];assert.deepEqual(g.flowers,[0]);assert.equal(g.seeds[0],1);assert.equal(g.planted_at,null);await db.close();console.log('PASS planting time: no retroactive growth; mature once; repeated finish gives no duplicate seed');

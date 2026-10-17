@@ -1,3 +1,4 @@
+import type { BreakSession } from '../domain';
 import { BLOOM_SECONDS, STAGE_SECONDS } from '../lib/growth';
 
 // Botanical reference times are educational only; the game uses completed break seconds.
@@ -46,16 +47,20 @@ export function calmClock(seconds: number) {
   return { text: `${String(Math.min(99, left)).padStart(2, '0')}:${String(right).padStart(2, '0')}`, unit: hours ? '小时 / 分钟' : '分钟 / 秒钟' };
 }
 export type SeedGarden = { seeds: number[]; flowers: number[]; growing: { kind: number; seconds: number } | null; credited: number };
-export type Save = { garden?: SeedGarden; version: 1; name: string; total: number; started: number | null; storySeen: boolean; color: string };
+export type Save = { sessions?: BreakSession[]; garden?: SeedGarden; version: 1; name: string; total: number; started: number | null; storySeen: boolean; color: string };
 export const freshSave: Save = { version: 1, name: '旅人', total: 0, started: null, storySeen: false, color: 'forest' };
 // Previous prototype allowed up to 112 botanical days × 600 game seconds.
 const LEGACY_MAX_GROWING_SECONDS = 112 * 600;
 export function validSave(value: unknown): value is Save {
   if (!value || typeof value !== 'object') return false;
   const s = value as Save;
-  return validGarden(s.garden) && s.version === 1 && typeof s.name === 'string' && s.name.length <= 40 && Number.isFinite(s.total) && s.total >= 0 && s.total <= 3600000 && (s.started === null || Number.isFinite(s.started) && s.started > 0 && s.started <= Date.now()) && typeof s.storySeen === 'boolean' && ['forest', 'blue', 'silver', 'black'].includes(s.color);
+  return validSessions(s.sessions) && validGarden(s.garden) && s.version === 1 && typeof s.name === 'string' && s.name.length <= 40 && Number.isFinite(s.total) && s.total >= 0 && s.total <= 3600000 && (s.started === null || Number.isFinite(s.started) && s.started > 0 && s.started <= Date.now()) && typeof s.storySeen === 'boolean' && ['forest', 'blue', 'silver', 'black'].includes(s.color);
 }
 
+function validSessions(value: unknown): boolean {
+  if (value === undefined) return true;
+  return Array.isArray(value) && value.length <= 10000 && value.every(s => s && typeof s.id === 'string' && s.id.length <= 100 && s.user_id === 'local' && typeof s.started_at === 'string' && Number.isFinite(Date.parse(s.started_at)) && typeof s.ended_at === 'string' && Number.isFinite(Date.parse(s.ended_at)) && Date.parse(s.ended_at) >= Date.parse(s.started_at) && Number.isInteger(s.duration_seconds) && s.duration_seconds >= 0 && s.duration_seconds <= 43200) && new Set(value.map(s => s.id)).size === value.length;
+}
 function validGarden(value: unknown) {
   if (value === undefined) return true;
   if (!value || typeof value !== 'object') return false;
@@ -114,7 +119,10 @@ export function tickLocal(save: Save, now = Date.now()): Save {
 export function finishLocal(save: Save, now = Date.now()): Save {
   if (save.started === null) return save;
   const next = tickLocal(save,now);
-  return {...next,started:null,garden:{...seedGarden(next),credited:0}};
+  const duration = seedGarden(next).credited;
+  const session: BreakSession = {id: 'local-' + save.started, user_id:'local', started_at:new Date(save.started).toISOString(), ended_at:new Date(Math.max(now,save.started)).toISOString(), duration_seconds:duration};
+  const sessions = [...(save.sessions ?? []).filter(s => s.id !== session.id),session].slice(-10000);
+  return {...next,sessions,started:null,garden:{...seedGarden(next),credited:0}};
 }
 export function demoFlowers(save: Save): Save {
   const garden = seedGarden(save), flowers = [...garden.flowers];
