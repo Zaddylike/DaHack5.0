@@ -31,4 +31,13 @@ describe('cloud profile summary', () => {
     view.rerender(<AccountSummary {...props} error="Offline"/>);
     expect(screen.getByRole('alert').textContent).toContain('Offline');
   });
+  it('shows only the matching session memory and reports memory loading errors separately', () => {
+    const memory = { session_id: 'one', user_id: 'me', note: 'A quiet patch of sun', latitude_approx: 37.33, longitude_approx: -121.89, photo_path: null, captured_at: '2026-10-16T12:05:00Z' };
+    const view = render(<AccountSummary {...props} memories={[memory]}/>);
+    expect(screen.getByText(/A quiet patch of sun/)).toBeTruthy();
+    expect(screen.getByText(/Approx. 37.33, -121.89/)).toBeTruthy();
+    view.rerender(<AccountSummary {...props} memories={[]} memoryError="Offline"/>);
+    expect(screen.getByRole('alert').textContent).toContain('Offline');
+    expect(screen.getByText('Nature break')).toBeTruthy();
+  });
 });

@@ -1,0 +1,24 @@
+.memory-entry{margin:18px auto 0;padding:12px 20px;border:1px solid #9cab91;border-radius:999px;color:#395b41;background:#f5f8ee;font-size:12px;letter-spacing:.03em;box-shadow:0 4px 15px #25402d12}
+.memory-entry:hover,.memory-action:hover,.memory-location:hover{background:#e8efe0}
+.memory-inline-error,.memory-inline-success{max-width:320px;margin:12px auto 0;text-align:center;font-size:11px;line-height:1.5}
+.memory-inline-error,.memory-error{color:#995943}.memory-inline-success{color:#557653}
+.outdoor-memory-form{display:grid;gap:15px;font-size:12px;color:#3c5846}
+.outdoor-memory-form>p{margin:0;color:#74836d;line-height:1.6}
+.memory-note{display:block;font-weight:600}
+.memory-note span{float:right;color:#87947e;font-weight:400}
+.memory-note textarea{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid #cbd8c3;border-radius:9px;background:#fffef9;color:#30463b;font:inherit;line-height:1.6;resize:vertical}
+.memory-note textarea:focus-visible{outline:2px solid #849c73;outline-offset:2px}
+.memory-photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.memory-action,.memory-location{display:block;text-align:center;border:1px solid #ccd8c4;border-radius:9px;padding:12px 8px;background:#f7faf4;cursor:pointer;font-size:12px}
+.memory-action input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.memory-action:focus-within{outline:2px solid #849c73;outline-offset:2px}
+.memory-location{width:100%}
+.outdoor-memory-form small{color:#788975;line-height:1.5}
+.memory-preview{display:block;width:100%;max-height:230px;object-fit:cover;border-radius:10px;border:1px solid #d7dfcf}
+.memory-footer{display:flex;gap:10px;justify-content:space-between;border-top:1px solid #d6e0d0;padding-top:15px}
+.memory-footer button{min-height:42px;padding:10px 14px;border-radius:8px;font-size:12px}
+.memory-discard{color:#7e8979}.memory-primary{background:#3e6147;color:#f7faf4}
+.account-memory-note{font-size:12px!important;color:#3c5846!important;line-height:1.5!important;margin:8px 0!important;white-space:pre-wrap;overflow-wrap:anywhere}
+.account-memory-photo{display:block;width:min(240px,100%);max-height:180px;margin-top:10px;border-radius:10px;object-fit:cover}
+.account-activity-item{align-items:flex-start!important}
+@media(max-width:600px){.memory-entry{margin-top:14px}.outdoor-memory-form{gap:12px}.memory-photo-actions{gap:7px}}

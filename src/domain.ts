@@ -1,4 +1,5 @@
 export type BreakSession = { id: string; user_id: string; started_at: string; ended_at: string | null; duration_seconds: number };
+export type BreakMemory = { session_id: string; user_id: string; note: string | null; latitude_approx: number | null; longitude_approx: number | null; photo_path: string | null; captured_at: string | null };
 export type Profile = { user_id: string; display_name: string };
 export type FlowerCollection = { id: string; user_id: string; species: string; collected_at: string };
 export type GardenState = { user_id: string; seeds: number[]; flowers: number[]; growing_kind: number | null; growing_seconds: number; awarded_milestones: number };

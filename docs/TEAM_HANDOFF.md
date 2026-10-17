@@ -56,3 +56,7 @@ B/C 在核心 PR 合併後 `git switch main`、`git pull --ff-only`，再分別 
 每 300 秒累積外出時間發一顆（3 分鐘 + 2 分鐘也可），GO 計時中會呼叫 claim_seeds，STOP transaction 也會補領漏掉的門檻。`awarded_milestones` 在同一筆 server transaction 更新，跨裝置和重試不會重複發。每次只能種一株；種下後累積 600 秒已完成休息即開花，返還同類種子。正在計時的時間可領種子，但植物成長與 Profile 休息統計要等 STOP 成功後才增加。若 SQL 尚未套用，登入版會顯示載入錯誤；不要先部署前端。
 
 本機驗證：50 個 Vitest 測試與 production build 通過。尚未執行真實 Supabase RPC / RLS 驗收；上線後用五個 Demo 帳號驗證資料隔離、3+2 分鐘領種子、種植、重新整理及重複 STOP。
+
+## 戶外記錄功能分支（尚未合併 main）
+
+`codex/outdoor-memory` 在 GO 期間提供選填文字、照片及約略位置，STOP 先儲存正式休息，再附加私人記錄。Member A 負責新的 `src/lib/outdoorMemory.ts`、`src/redesign/OutdoorMemory.tsx`、`src/api.ts`、`src/context/BreakContext.tsx` 與 `supabase/migrations/202610170002_outdoor_memories.sql`。Profile 使用共用 `memories` props 顯示，不自行計算或寫入。詳見 [OUTDOOR_MEMORY.md](./OUTDOOR_MEMORY.md)。本 migration 須在此分支的登入版預覽前執行；不得因預覽而合併 main。
