@@ -9,7 +9,7 @@ function errorText(error: unknown) { return error instanceof Error ? error.messa
 
 export function useOutdoorMemory(userId: string | null, activeId: string | null, sessions: BreakSession[], refreshMemories: () => Promise<void>) {
   const pendingKey = `bloombreak-pending-memory-${userId}`;
-  const [pendingId, setPendingId] = useState<string | null>(() => userId ? localStorage.getItem(pendingKey) : null);
+  const [pendingId, setPendingId] = useState<string | null>(() => { try { return userId ? localStorage.getItem(pendingKey) : null; } catch { return null; } });
   const currentId = pendingId ?? activeId;
   const draftKey = userId && currentId ? `${userId}:${currentId}` : null;
   const [draft, setDraft] = useState<OutdoorDraft>(emptyOutdoorDraft);
@@ -19,6 +19,7 @@ export function useOutdoorMemory(userId: string | null, activeId: string | null,
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [savedPhotoSession, setSavedPhotoSession] = useState<string | null>(null);
   const completedPending = Boolean(pendingId && sessions.some(session => session.id === pendingId && session.ended_at));
 
   useEffect(() => {
@@ -82,6 +83,7 @@ export function useOutdoorMemory(userId: string | null, activeId: string | null,
       await writes.current;
       const snapshot = draftRef.current;
       await saveBreakMemory(id, userId, snapshot);
+      if (snapshot.photo) setSavedPhotoSession(id);
       await clearOutdoorDraft(draftKey);
       localStorage.removeItem(pendingKey);
       setPendingId(null);
@@ -96,12 +98,12 @@ export function useOutdoorMemory(userId: string | null, activeId: string | null,
     if (!activeId) return;
     if (pendingId && pendingId !== activeId) { await stop(); return; }
     const hasDraft = hasOutdoorMemory(draftRef.current);
-    if (hasDraft) { localStorage.setItem(pendingKey, activeId); setPendingId(activeId); }
+    if (hasDraft) { try { localStorage.setItem(pendingKey, activeId); } catch { setError('This browser could not keep the retry marker. Keep this page open to retry.'); } setPendingId(activeId); }
     const stopped = await stop();
     if (stopped && hasDraft) await save(activeId);
   }
 
-  return { draft, ready, busy, error, message, pendingId, completedPending, canCapture: Boolean(activeId && (!pendingId || pendingId === activeId)), setNote, setPhoto, removePhoto, addLocation, removeLocation, discard, retry: () => pendingId && completedPending ? save(pendingId) : Promise.resolve(), stopAndSave };
+  return { savedPhotoSession, dismissShare: () => setSavedPhotoSession(null), draft, ready, busy, error, message, pendingId, completedPending, canCapture: Boolean(activeId && (!pendingId || pendingId === activeId)), setNote, setPhoto, removePhoto, addLocation, removeLocation, discard, retry: () => pendingId && completedPending ? save(pendingId) : Promise.resolve(), stopAndSave };
 }
 
 type MemoryControls = ReturnType<typeof useOutdoorMemory>;
