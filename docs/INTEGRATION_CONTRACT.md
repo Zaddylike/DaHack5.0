@@ -1,4 +1,4 @@
-# BloomBreak Integration Contract
+# Mori Integration Contract
 
 ## Ownership
 A owns `src/api.ts`, `src/domain.ts`, `src/lib/*`, `src/context/*`, `src/main.tsx`, migrations and dependencies. B owns `src/pages/Garden.tsx` and new Garden-specific components/styles. C owns `src/pages/Profile.tsx` and new Profile-specific components/styles. Shared navigation/style changes require coordination with A. B/C must not import Supabase or write database code.

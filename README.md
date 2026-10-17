@@ -1,8 +1,8 @@
-# BloomBreak · De Anza Hacks 5.0
+# Mori · De Anza Hacks 5.0
 
 > Take a break. Find a little wonder. Grow something.
 
-BloomBreak 把忙碌生活中的短暫休息，變成一場重新發現自然的小冒險。使用者暫時離開螢幕，走出去留意身邊的顏色、聲音與細節；每次完成休息，都會讓自己的 California Poppy 再成長一點。這是我們對 **Nature Life × Modern Life** 的回應：用數位工具提醒人回到真實世界，而不是讓人花更多時間盯著螢幕。
+Mori 把忙碌生活中的短暫休息，變成一場重新發現自然的小冒險。使用者暫時離開螢幕，走出去留意身邊的顏色、聲音與細節；每次完成休息，都會讓自己的 California Poppy 再成長一點。這是我們對 **Nature Life × Modern Life** 的回應：用數位工具提醒人回到真實世界，而不是讓人花更多時間盯著螢幕。
 
 ## 目前可體驗的流程
 
