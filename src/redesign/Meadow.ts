@@ -18,13 +18,17 @@ export function plantable(x: number, z: number) {
 function random(seed: number) { let state = seed >>> 0; return () => { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; }; }
 export function flowerPositions(count: number) {
   const rng = random(713), positions: { x: number; z: number }[] = [];
+  // The first flowers anchor the foreground, where the house cannot hide them.
+  for (const position of [{ x: 1.5, z: 1.8 }, { x: 2.25, z: .7 }]) {
+    if (positions.length < Math.min(100, count)) positions.push(position);
+  }
   for (let attempt = 0; positions.length < Math.min(100, count) && attempt < 10000; attempt++) {
     const x = (rng() - .5) * 7.5, z = (rng() - .5) * 6.0;
-    if (plantable(x, z) && positions.every(p => Math.hypot(p.x - x, p.z - z) > .23)) positions.push({ x, z });
+    if (plantable(x, z) && positions.every(p => Math.hypot(p.x - x, p.z - z) > .36)) positions.push({ x, z });
   }
   return positions;
 }
-export function createMeadow(scene: THREE.Scene) {
+export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: number; z: number }> = []) {
   const disposables: { dispose: () => void }[] = [], rng = random(257), color = new THREE.Color();
   const segments = 64, rings = 16, positions: number[] = [], colors: number[] = [], indices: number[] = [];
   const moss = new THREE.Color('#819b5a'), light = new THREE.Color('#a6b578');
@@ -63,9 +67,12 @@ export function createMeadow(scene: THREE.Scene) {
   for (let i = 0; i < 10000; i++) {
     const x = (rng() - .5) * 7.9, z = (rng() - .5) * 6.3;
     if (!plantable(x,z)) continue;
+    const nearestFlower = flowers.reduce((nearest, flower) => Math.min(nearest, Math.hypot(x - flower.x, z - flower.z)), Infinity);
+    if (nearestFlower < .38) continue;
+    const clearingEdge = Math.min(1, (nearestFlower - .38) / .35);
     const density = .55 + Math.sin(x * 3 + z * 1.4) * .20 + Math.cos(z * 3.1 - x) * .18;
-    if (rng() > density) continue;
-    candidates.push({ x,z,height:.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07, rotation:rng()*Math.PI*2 });
+    if (rng() > density * (.5 + .5 * clearingEdge)) continue;
+    candidates.push({ x,z,height:(.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07) * (.65 + .35 * clearingEdge), rotation:rng()*Math.PI*2 });
   }
   const grass = new THREE.InstancedMesh(bladeGeo,grassMat,candidates.length); grass.receiveShadow = true; grass.castShadow = false;
   const dummy = new THREE.Object3D(), darkGrass = new THREE.Color('#688b48'), sunGrass = new THREE.Color('#a9bb6e');

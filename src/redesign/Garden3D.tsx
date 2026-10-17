@@ -60,7 +60,8 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ color: 0x465347, opacity: .13 }));
     shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.position.y = -.16; shadowPlane.receiveShadow = true; scene.add(shadowPlane);
     geometries.push(shadowPlane.geometry); materials.push(shadowPlane.material);
-    const meadow = !detail ? createMeadow(scene) : null;
+    const gardenPositions = !detail ? flowerPositions(count + (lastFlower === count ? 1 : 0)) : [];
+    const meadow = !detail ? createMeadow(scene, gardenPositions) : null;
     if (!detail) {
       // Limestone dwelling, dark standing-seam roof, recessed glazing and timber door.
       box(2.15, .14, 1.95, stone, -.4, .23, -.45, .035);
@@ -96,8 +97,8 @@ export default function Garden3D({ count, progress, selected, lastFlower, onSele
     const plants: Plant[] = [];
     if (detail) plants.push({ id: selected!, kind: kindOverride ?? (selected! < count ? flowerKinds?.[selected!] : activeKind) ?? selected! % 5, x: 0, z: 0, scale: 1.1, progress: selected! < count ? 1 : progress });
     else {
-      flowerPositions(count).forEach(({ x,z }, i) => plants.push({ id: i, kind: flowerKinds?.[i] ?? i % 5, x, z, scale: .37 + (i % 5) * .035, progress: 1 }));
-      if (lastFlower === count) plants.push({ id: count, kind: activeKind ?? count % 5, x: .83, z: 1.15, scale: .48, progress });
+      gardenPositions.slice(0, count).forEach(({ x,z }, i) => plants.push({ id: i, kind: flowerKinds?.[i] ?? i % 5, x, z, scale: i < 5 ? .68 : .48, progress: 1 }));
+      if (lastFlower === count) { const { x, z } = gardenPositions[count]; plants.push({ id: count, kind: activeKind ?? count % 5, x, z, scale: count < 5 ? .68 : .52, progress }); }
     }
     const batches = new Map<string, Plant[]>();
     for (const plant of plants) { const key = `${plant.kind}-${plant.progress}`; batches.set(key, [...(batches.get(key) ?? []), plant]); }
