@@ -68,11 +68,11 @@ export function createMeadow(scene: THREE.Scene, flowers: ReadonlyArray<{ x: num
     const x = (rng() - .5) * 7.9, z = (rng() - .5) * 6.3;
     if (!plantable(x,z)) continue;
     const nearestFlower = flowers.reduce((nearest, flower) => Math.min(nearest, Math.hypot(x - flower.x, z - flower.z)), Infinity);
-    if (nearestFlower < .38) continue;
-    const clearingEdge = Math.min(1, (nearestFlower - .38) / .35);
+    if (nearestFlower < .22) continue;
+    const clearingEdge = Math.min(1, (nearestFlower - .22) / .2);
     const density = .55 + Math.sin(x * 3 + z * 1.4) * .20 + Math.cos(z * 3.1 - x) * .18;
     if (rng() > density * (.5 + .5 * clearingEdge)) continue;
-    candidates.push({ x,z,height:(.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07) * (.65 + .35 * clearingEdge), rotation:rng()*Math.PI*2 });
+    candidates.push({ x,z,height:(.12 + rng() * .17 + Math.max(0,Math.sin(x*2-z))*.07) * .72 * (.65 + .35 * clearingEdge), rotation:rng()*Math.PI*2 });
   }
   const grass = new THREE.InstancedMesh(bladeGeo,grassMat,candidates.length); grass.receiveShadow = true; grass.castShadow = false;
   const dummy = new THREE.Object3D(), darkGrass = new THREE.Color('#688b48'), sunGrass = new THREE.Color('#a9bb6e');
