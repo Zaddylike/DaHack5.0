@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { flowerStage } from './model';
+import { flowerStage, growthStages } from './model';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Thin curved surfaces, rather than flattened spheres, keep petals light in silhouette.
@@ -36,7 +36,7 @@ export function flowerGeometry(kind: number, progress = 1) {
     seam.rotateY(Math.PI/2); seam.scale(1, .55,1.65); seam.translate(0,.018,0);
     return [merge([]),merge([]),merge(head),seam];
   }
-  const height = stage === 1 ? .16 + (progress-.15)*.45 : stage === 2 ? (kind === 1 ? .23 : .48) + (progress-.35)*.4 : (kind === 1 ? .9 : 1.25);
+  const height = stage === 1 ? .16 + (progress-growthStages[1].at)*.45 : stage === 2 ? (kind === 1 ? .23 : .48) + (progress-growthStages[2].at)*.4 : (kind === 1 ? .9 : 1.25);
   const bend = kind === 3 && stage === 3 ? .12 : .025;
   const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(-.025,height*.38,.01),new THREE.Vector3(bend,height*.8,-.015),new THREE.Vector3(0,height,0)]);
   stems.push(new THREE.TubeGeometry(curve,16,stage === 1 ? .009 : .012,6,false));

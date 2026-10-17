@@ -7,7 +7,7 @@ export function Flower({ kind = 0, progress = 1, className = '' }: { kind?: numb
     <path d="M60 166 Q51 124 61 67" stroke="#66794a" strokeWidth="2.3"/>
     <path d="M57 133 Q20 112 29 93 Q56 101 57 133Z" fill="#77875b"/><path d="M57 116 Q88 91 94 105 Q81 125 57 124Z" fill="#536c43"/>
     <path d="M57 148 Q74 134 86 141 Q75 151 59 153" fill="#8b9867"/>
-    {progress < .2 ? <g><path d="M59 76 Q39 62 47 53 Q59 53 61 67 Q65 50 74 55 Q81 66 59 76" fill="#8a9b64"/></g> : progress < .7 ? <g><ellipse cx="61" cy="61" rx={progress < .4 ? 8 : 12} ry="18" fill={progress < .4 ? '#8a9b64' : s.color}/><path d="M60 80 Q43 63 49 53 M60 80 Q77 63 73 53" stroke="#71844e" strokeWidth="3"/></g> : <g>
+    {progress < .2 ? <g><path d="M59 76 Q39 62 47 53 Q59 53 61 67 Q65 50 74 55 Q81 66 59 76" fill="#8a9b64"/></g> : progress < .7 ? <g><ellipse cx="61" cy="61" rx={progress < .5 ? 8 : 12} ry="18" fill="#8a9b64"/><path d="M60 80 Q43 63 49 53 M60 80 Q77 63 73 53" stroke="#71844e" strokeWidth="3"/></g> : progress < 1 ? <g><path d="M60 81 Q43 57 60 33 Q77 57 60 81Z" fill="#7c945c"/><path d="M60 76 Q52 55 60 40 Q68 55 60 76" fill={s.color}/></g> : <g>
       {Array.from({ length: kind === 1 || kind === 4 ? 12 : 7 }, (_, i) => <ellipse key={i} cx="60" cy="40" rx={kind === 1 ? 6 : 13} ry={kind === 1 ? 22 : 24} transform={`rotate(${i * (kind === 1 || kind === 4 ? 30 : 360 / 7)} 60 61)`} fill={s.color} stroke="#856538" strokeOpacity=".12" strokeWidth=".7"/>)}
       <circle cx="60" cy="61" r="9" fill={kind === 3 ? '#3f4630' : '#ba8b3b'}/><circle cx="58" cy="59" r="4" fill="#e9c56a"/>
       {Array.from({ length: 8 }, (_, i) => <circle key={i} cx={60 + Math.cos(i) * 6} cy={61 + Math.sin(i) * 6} r="1" fill="#67532b"/>)}

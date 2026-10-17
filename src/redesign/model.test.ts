@@ -13,8 +13,8 @@ describe('quiet timer and persistent local garden', () => {
     expect(stopped.total).toBe(660);
     expect(stopped.started).toBeNull();
     expect(finishLocal(stopped, 200000).total).toBe(660);
-    expect(gardenGrowth(stopped.total).count).toBe(0);
-    expect(gardenGrowth(stopped.total).activeSeconds).toBe(660);
+    expect(gardenGrowth(stopped.total).count).toBe(1);
+    expect(gardenGrowth(stopped.total).activeSeconds).toBe(60);
   });
   it('bounds abandoned sessions and backwards clocks', () => {
     expect(finishLocal({ ...freshSave, started: 1000 }, 999999999).total).toBe(43200);
@@ -26,19 +26,32 @@ describe('quiet timer and persistent local garden', () => {
   });
 });
 
-it('converts reference days to minutes and carries excess into the next flower', () => {
-  expect(bloomSeconds(2)).toBe(700 * 60);
+it('uses ten completed minutes per flower and carries excess into the next flower', () => {
+  expect(bloomSeconds(2)).toBe(600);
   expect(gardenGrowth(bloomSeconds(0)-1).count).toBe(0);
   expect(gardenGrowth(bloomSeconds(0))).toEqual({count:1,activeSeconds:0,progress:0});
   expect(gardenGrowth(secondsForFlowers(7)+123)).toEqual({count:7,activeSeconds:123,progress:123/bloomSeconds(7)});
   expect(gardenGrowth(secondsForFlowers(30)).count).toBe(30);
 });
 it('uses five stages with bloom only at completion', () => {
-  expect([0,.149,.15,.349,.35,.749,.75,.999,1].map(flowerStage)).toEqual([0,0,1,1,2,2,3,3,4]);
+  expect([0,119/600,120/600,299/600,300/600,419/600,420/600,599/600,1].map(flowerStage)).toEqual([0,0,1,1,2,2,3,3,4]);
+});
+
+it('advances the starter poppy across separate completed 0/2/5/7/10 minute breaks', () => {
+  let save = freshSave;
+  let started = 1000;
+  for (const [duration, stage] of [[120, 1], [180, 2], [120, 3], [180, 4]] as const) {
+    const running = { ...save, started };
+    expect(seedGarden(running).growing?.seconds ?? 0).toBe(save.total);
+    save = finishLocal(running, started + duration * 1000);
+    expect(save.total).toBe([120, 300, 420, 600][stage - 1]);
+    expect(stage === 4 ? seedGarden(save).flowers.length : flowerStage(seedGarden(save).growing!.seconds / 600)).toBe(stage === 4 ? 1 : stage);
+    started += duration * 1000 + 1000;
+  }
 });
 
 describe('seed loop', () => {
-  const begin = () => ({...freshSave,started:1000});
+  const begin = () => ({...freshSave,started:1000,garden:{seeds:[0,0,0,0,0],flowers:[],growing:null,credited:0}});
   it('drops once per full hour of one outing, survives reload, and never rerolls', () => {
     expect(seedGarden(tickLocal(begin(),3600000)).seeds.reduce((a,b)=>a+b,0)).toBe(0);
     const first=tickLocal(begin(),3601000);
@@ -71,5 +84,12 @@ describe('seed loop', () => {
     expect(validSave({...old,garden:{...seedGarden(old),seeds:[-1,0,0,0,0]}})).toBe(false);
     expect(demoFlowers(old).total).toBe(old.total);
     expect(seedGarden(demoFlowers(old)).flowers).toHaveLength(30);
+  });
+  it('retains existing preview growth when old save seconds exceed the new ten-minute bloom', () => {
+    const old = { ...freshSave, total: 1250, garden: { seeds: [0,0,0,0,0], flowers: [], growing: {kind: 0, seconds: 1250}, credited: 0 } };
+    expect(validSave(old)).toBe(true);
+    const migrated = seedGarden(old);
+    expect(migrated).toMatchObject({ seeds: [2,0,0,0,0], flowers: [0,0], growing: {kind: 0, seconds: 50} });
+    expect(seedGarden({ ...old, garden: migrated })).toEqual(migrated);
   });
 });

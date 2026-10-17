@@ -1,4 +1,6 @@
-// Reference sowing-to-flowering times, dependent on cultivar and climate.
+import { BLOOM_SECONDS, STAGE_SECONDS } from '../lib/growth';
+
+// Botanical reference times are educational only; the game uses completed break seconds.
 export const growthReferences = [
   { days: 60, range: '55–60', source: 'https://www.johnnyseeds.com/flowers/poppy/california-poppy-flower-seed-1229.html' },
   { days: 112, range: '91–133 · Bellissima', source: 'https://www.panamseed.com/utility/CultureSheetPDF.aspx?pagename=culture.aspx&txtphid=009703371&type=Per' },
@@ -8,8 +10,8 @@ export const growthReferences = [
 ] as const;
 // Stage proportions provide visual pacing, not botanical predictions.
 export const growthStages = [
-  { at: 0, zh: '种子', en: 'Seed' }, { at: .15, zh: '嫩芽', en: 'Sprout' },
-  { at: .35, zh: '长叶', en: 'Leaves' }, { at: .75, zh: '花苞', en: 'Bud' },
+  { at: STAGE_SECONDS[0] / BLOOM_SECONDS, zh: '种子', en: 'Seed' }, { at: STAGE_SECONDS[1] / BLOOM_SECONDS, zh: '嫩芽', en: 'Sprout' },
+  { at: STAGE_SECONDS[2] / BLOOM_SECONDS, zh: '幼苗', en: 'Seedling' }, { at: STAGE_SECONDS[3] / BLOOM_SECONDS, zh: '花苞', en: 'Bud' },
   { at: 1, zh: '开花', en: 'Bloom' },
 ] as const;
 export function flowerStage(progress: number) {
@@ -17,7 +19,7 @@ export function flowerStage(progress: number) {
   for (let i = 1; i < growthStages.length; i++) if (progress >= growthStages[i].at) stage = i;
   return stage;
 }
-export function bloomSeconds(kind: number) { return growthReferences[kind % 5].days * 600; }
+export function bloomSeconds(_kind: number) { return BLOOM_SECONDS; }
 const cycleSeconds = growthReferences.reduce((sum, _, i) => sum + bloomSeconds(i), 0);
 export function secondsForFlowers(count: number) {
   const n = Math.max(0, Math.floor(count));
@@ -46,6 +48,8 @@ export function calmClock(seconds: number) {
 export type SeedGarden = { seeds: number[]; flowers: number[]; growing: { kind: number; seconds: number } | null; credited: number };
 export type Save = { garden?: SeedGarden; version: 1; name: string; total: number; started: number | null; storySeen: boolean; color: string };
 export const freshSave: Save = { version: 1, name: '旅人', total: 0, started: null, storySeen: false, color: 'forest' };
+// Previous prototype allowed up to 112 botanical days × 600 game seconds.
+const LEGACY_MAX_GROWING_SECONDS = 112 * 600;
 export function validSave(value: unknown): value is Save {
   if (!value || typeof value !== 'object') return false;
   const s = value as Save;
@@ -60,10 +64,18 @@ function validGarden(value: unknown) {
   return Array.isArray(g.seeds) && g.seeds.length === 5 && g.seeds.every(n => Number.isInteger(n) && n >= 0 && n <= 100000)
     && Array.isArray(g.flowers) && g.flowers.length <= 10000 && g.flowers.every(kind)
     && Number.isInteger(g.credited) && g.credited >= 0 && g.credited <= 43200
-    && (g.growing === null || !!g.growing && kind(g.growing.kind) && Number.isFinite(g.growing.seconds) && g.growing.seconds >= 0 && g.growing.seconds < bloomSeconds(g.growing.kind));
+    && (g.growing === null || !!g.growing && kind(g.growing.kind) && Number.isFinite(g.growing.seconds) && g.growing.seconds >= 0 && g.growing.seconds < LEGACY_MAX_GROWING_SECONDS);
 }
 export function seedGarden(save: Save): SeedGarden {
-  if (save.garden) return save.garden;
+  if (save.garden) {
+    const garden = save.garden;
+    if (!garden.growing || garden.growing.seconds < BLOOM_SECONDS) return garden;
+    const completed = Math.floor(garden.growing.seconds / BLOOM_SECONDS);
+    const kind = garden.growing.kind;
+    const seeds = [...garden.seeds]; seeds[kind] += completed;
+    return { ...garden, seeds, flowers: [...garden.flowers, ...Array(completed).fill(kind)],
+      growing: garden.growing.seconds % BLOOM_SECONDS ? { kind, seconds: garden.growing.seconds % BLOOM_SECONDS } : null };
+  }
   const old = gardenGrowth(save.total);
   const flowers = Array.from({length: old.count}, (_, i) => i % 5);
   const seeds = [0,0,0,0,0]; flowers.forEach(kind => seeds[kind]++);
