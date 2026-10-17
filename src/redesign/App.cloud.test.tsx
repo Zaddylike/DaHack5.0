@@ -18,7 +18,7 @@ vi.mock('../context/BreakContext', () => ({
     start: vi.fn(), stop: vi.fn(), retry: vi.fn(), plant: mock.plant }),
 }));
 
-beforeEach(() => { localStorage.clear(); localStorage.setItem('bloombreak-ui-user-a', JSON.stringify({ ...freshSave, storySeen: true })); mock.plant.mockResolvedValue(true); HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); }; HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); }; });
+beforeEach(() => { localStorage.clear(); localStorage.setItem('bloombreak-language', 'zh'); localStorage.setItem('bloombreak-ui-user-a', JSON.stringify({ ...freshSave, storySeen: true })); mock.plant.mockResolvedValue(true); HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); }; HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); }; });
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 
 it('shows the signed-in seed bag and plants the chosen cloud seed', async () => {

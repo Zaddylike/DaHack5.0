@@ -9,9 +9,16 @@ import { freshSave } from './model';
 vi.mock('./Garden3D', () => ({ default: () => <div aria-label="3D scene"/> }));
 const key = 'bloombreak-local-v1';
 function mount(path = '/preview') { return render(<MemoryRouter initialEntries={[path]}><AuthContext.Provider value={{ user: null, loading: false, error: '' }}><App/></AuthContext.Provider></MemoryRouter>); }
-beforeEach(() => localStorage.clear());
+beforeEach(() => { localStorage.clear(); localStorage.setItem('bloombreak-language', 'zh'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe('local experience', () => {
+  it('defaults to English when no language preference exists', () => {
+    localStorage.removeItem('bloombreak-language');
+    localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
+    mount();
+    expect(screen.getByRole('button', { name: 'Start outdoor time' })).toBeTruthy();
+    expect(document.documentElement.lang).toBe('en');
+  });
   it('switches the whole experience to English and remembers the choice', () => {
     localStorage.setItem(key, JSON.stringify({ ...freshSave, storySeen: true }));
     const first = mount();
