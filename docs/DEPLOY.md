@@ -1,6 +1,6 @@
 # 一週公開展示：Vercel + Supabase
 
-Vercel 免費 Hobby 專案會提供 `*.vercel.app` 公開網址，不需要購買網域。BloomBreak 仍以 Supabase Auth + RLS 保護五個 Demo 帳號的資料。正式部署不包含本機 `/preview` 範例頁。
+Vercel 免費 Hobby 專案會提供 `*.vercel.app` 公開網址，不需要購買網域。Mori 仍以 Supabase Auth + RLS 保護五個 Demo 帳號的資料。正式部署不包含本機 `/preview` 範例頁。
 
 ## 需要的帳號
 

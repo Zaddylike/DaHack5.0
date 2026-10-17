@@ -31,7 +31,7 @@ export function AuthEntry() {
     catch { setError('login'); } finally { setBusy(false); }
   }
   return <main className="auth-page">
-    <header className="auth-header"><a href="/login" className="wordmark">bloom<span>break</span></a><LanguageSwitch/></header>
+    <header className="auth-header"><a href="/login" className="wordmark">Mori</a><LanguageSwitch/></header>
     <div className="auth-layout">
       <aside className="auth-landscape" aria-label={t('自然花卉插画', 'Botanical illustration')}>
         <div className="auth-orbit"/><div className="auth-flower auth-flower-one"><Flower kind={1}/></div><div className="auth-flower auth-flower-two"><Flower kind={4}/></div><div className="auth-flower auth-flower-three"><Flower kind={0}/></div>

@@ -1,4 +1,4 @@
-# BloomBreak UI prototype — outdoor time
+# Mori UI prototype — outdoor time
 
 All work stays on `jc-ui-prototype`; no database or authentication contract changes.
 
